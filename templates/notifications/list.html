@@ -1,0 +1,37 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Notifications{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="notifications-header">
+  <form method="post" action="{% url 'notifications:mark_all_read' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost btn-sm">Mark all read</button>
+  </form>
+</div>
+<div class="notification-list">
+  {% for notification in notifications %}
+  <article class="notification-item floating-card {% if not notification.is_read %}unread{% endif %} type-{{ notification.notification_type }}">
+    <div class="notification-content">
+      <h4>{{ notification.title }}</h4>
+      <p>{{ notification.message }}</p>
+      <time>{{ notification.created_at|timesince }} ago</time>
+    </div>
+    <div class="notification-actions">
+      {% if notification.link %}
+      <a href="{{ notification.link }}" class="btn btn-ghost btn-sm">View</a>
+      {% endif %}
+      {% if not notification.is_read %}
+      <form method="post" action="{% url 'notifications:mark_read' notification.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-ghost btn-sm">Mark read</button>
+      </form>
+      {% endif %}
+    </div>
+  </article>
+  {% empty %}
+  <p class="text-muted">No notifications yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

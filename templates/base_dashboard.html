@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %}dashboard-layout{% endblock %}
+
+{% block body %}
+<div class="app-shell">
+  {% include "components/sidebar.html" %}
+  <div class="app-main">
+    {% include "components/topbar.html" %}
+    <main class="app-content">
+      {% include "components/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

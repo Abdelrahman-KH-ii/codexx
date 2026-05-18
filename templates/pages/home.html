@@ -1,0 +1,73 @@
+{% extends "base_hero.html" %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block hero_content %}
+<div class="hero-brand hero-brand-stitch">
+  <div class="launch-badge">
+    <span class="pulse-dot"></span>
+    <span>Now Launching: Architecture Track</span>
+  </div>
+  <h1 class="hero-headline">
+    <span class="line">Master Full-Stack with</span>
+    <span class="line gradient-text">Flow State</span>
+  </h1>
+  <p class="hero-sub">Deep-dive into production-ready engineering. Our immersive terminal-first curriculum helps you reach the zone and stay there.</p>
+  <div class="hero-actions-row">
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Start Coding Now <span class="material-symbols-outlined">arrow_forward</span></a>
+    <a href="{% url 'courses:list' %}" class="btn btn-ghost btn-lg">View Curriculum</a>
+  </div>
+  <div class="terminal-window terminal-hero">
+    <div class="terminal-titlebar">
+      <div class="terminal-dots"><span></span><span></span><span></span></div>
+      <span>DevFlowIDE — learn.py</span>
+      <span></span>
+    </div>
+    <div class="terminal-body">
+      <pre class="terminal-code"><code><span class="syntax-keyword">def</span> <span class="syntax-tag">learn</span>():
+    <span class="syntax-keyword">while</span> curious:
+        <span class="syntax-tag">ship_code</span>()
+        <span class="syntax-tag">level_up</span>()<span class="terminal-cursor"></span></code></pre>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block glass_content %}
+<div class="glass-auth">
+  <div class="glass-brand-row">
+    <img src="{% static 'img/logo.svg' %}" alt="DevFlow" class="brand-logo" width="40" height="40">
+    <h2 class="glass-title">DevFlow.io</h2>
+  </div>
+  <p class="glass-subtitle">AI-powered coding education. Enter flow state.</p>
+  <div class="glass-actions">
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg btn-block">Create free account</a>
+    <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-lg btn-block">Sign in</a>
+    <a href="{% url 'courses:list' %}" class="btn btn-link">Browse courses →</a>
+  </div>
+  {% if featured_courses %}
+  <div class="glass-featured">
+    <p class="section-label">Featured tracks</p>
+    {% for course in featured_courses %}
+    <a href="{{ course.get_absolute_url }}" class="mini-course">
+      <span class="mini-course-title">{{ course.title }}</span>
+      <span class="mini-course-meta">{{ course.get_difficulty_display }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-brand-stitch { max-width: 560px; }
+.hero-actions-row { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+.hero-actions-row .btn { display: inline-flex; align-items: center; gap: 0.35rem; }
+.terminal-hero { margin-top: 0.5rem; }
+.terminal-code { margin: 0; color: var(--on-surface); }
+.glass-brand-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+.glass-brand-row .glass-title { margin: 0; font-size: 1.5rem; }
+</style>
+{% endblock %}

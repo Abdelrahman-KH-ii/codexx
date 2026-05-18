@@ -1,0 +1,143 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% load course_tags %}
+
+{% block title %}
+  <span class="text-ar">لوحة التحكم</span>
+  <span class="text-en">Dashboard</span>
+{% endblock %}
+
+{% block page_title %}
+  <span class="text-ar">لوحة التحكم</span>
+  <span class="text-en">Dashboard</span>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+  <section class="welcome-banner floating-card" data-animate-card>
+    <div class="welcome-glow"></div>
+    <h2>
+      <span class="text-ar">مرحباً بك مجدداً، {{ user.username }} 👋</span>
+      <span class="text-en">Welcome back, {{ user.username }} 👋</span>
+    </h2>
+    <p>
+      <span class="text-ar">المستوى {{ profile.level }} · {{ profile.xp }} نقطة خبرة · متتالي منذ {{ profile.streak_days }} يوم</span>
+      <span class="text-en">Level {{ profile.level }} · {{ profile.xp }} XP · {{ profile.streak_days }} day streak</span>
+    </p>
+    <div class="welcome-actions">
+      <a href="{% url 'courses:list' %}" class="btn btn-primary">
+        <span class="text-ar">تصفح الكورسات</span>
+        <span class="text-en">Browse courses</span>
+      </a>
+      <a href="{% url 'ai_assistant:chat' %}" class="btn btn-ghost">
+        <span class="text-ar">اسأل المساعد الذكي</span>
+        <span class="text-en">Ask AI</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="stat-cards">
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">{{ enrollments|length }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">الكورسات النشطة</span>
+        <span class="text-en">Active courses</span>
+      </span>
+    </div>
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">{{ completed_count }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">الدروس المنجزة</span>
+        <span class="text-en">Lessons done</span>
+      </span>
+    </div>
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">{{ course_count }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">الكورسات المتاحة</span>
+        <span class="text-en">Available</span>
+      </span>
+    </div>
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">L{{ profile.level }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">مستواك الحالي</span>
+        <span class="text-en">Your level</span>
+      </span>
+    </div>
+  </div>
+
+  <section class="dashboard-section">
+    <h3 class="section-title">
+      <span class="text-ar">كورساتك المسجل بها</span>
+      <span class="text-en">Your courses</span>
+    </h3>
+    {% if enrollments %}
+    <div class="enrollment-list">
+      {% for enrollment in enrollments %}
+      <a href="{{ enrollment.course.get_absolute_url }}" class="enrollment-item floating-card" data-animate-card>
+        <div>
+          <h4>{{ enrollment.course|translate_title:active_lang }}</h4>
+          <p>{{ enrollment.course|translate_difficulty:active_lang }}</p>
+        </div>
+        <div class="progress-ring-wrap">
+          <div id="progress-ring-{{ enrollment.id }}" class="react-mount" data-percent="{{ enrollment.progress_percent }}"></div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">
+      <span class="text-ar">لم تسجل في أي كورس بعد. <a href="{% url 'courses:list' %}">استكشف الكورسات الآن</a></span>
+      <span class="text-en">No enrollments yet. <a href="{% url 'courses:list' %}">Explore courses</a></span>
+    </p>
+    {% endif %}
+  </section>
+
+  <section class="dashboard-section">
+    <h3 class="section-title">
+      <span class="text-ar">الأنشطة الأخيرة</span>
+      <span class="text-en">Recent activity</span>
+    </h3>
+    {% if recent_progress %}
+    <ul class="activity-list">
+      {% for p in recent_progress %}
+      <li class="activity-item">
+        <span class="activity-icon">✓</span>
+        <span>
+          {% if is_ar %}
+            {% if p.lesson.slug == 'intro' %}
+              مقدمة ونظرة عامة
+            {% elif p.lesson.slug == 'practice' %}
+              تطبيق عملي وتحدي برمجي
+            {% else %}
+              {{ p.lesson.title }}
+            {% endif %}
+          {% else %}
+            {{ p.lesson.title }}
+          {% endif %}
+          — {{ p.lesson.module.course|translate_title:active_lang }}
+        </span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="text-muted">
+      <span class="text-ar">أكمل أول درس لديك لتظهر أنشطتك هنا.</span>
+      <span class="text-en">Complete a lesson to see activity here.</span>
+    </p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="{% static 'js/react/progress-ring.js' %}"></script>
+<script>
+document.querySelectorAll('.react-mount[data-percent]').forEach(function(el) {
+  NexusProgressRing.mount(el, parseInt(el.dataset.percent, 10) || 0);
+});
+</script>
+{% endblock %}

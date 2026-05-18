@@ -1,0 +1,101 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}
+  <span class="text-ar">التحليلات والمتابعة</span>
+  <span class="text-en">Analytics</span>
+{% endblock %}
+
+{% block page_title %}
+  <span class="text-ar">التحليلات والمتابعة</span>
+  <span class="text-en">Analytics</span>
+{% endblock %}
+
+{% block content %}
+<div class="analytics-grid">
+  <div class="stat-cards">
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">{{ completed_lessons }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">الدروس المكتملة</span>
+        <span class="text-en">Lessons completed</span>
+      </span>
+    </div>
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">{{ total_xp_week }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">نقاط هذا الأسبوع</span>
+        <span class="text-en">XP this week</span>
+      </span>
+    </div>
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">L{{ profile.level }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">المستوى الحالي</span>
+        <span class="text-en">Current level</span>
+      </span>
+    </div>
+    <div class="stat-card floating-card" data-animate-card>
+      <span class="stat-card-value">{{ enrollments|length }}</span>
+      <span class="stat-card-label">
+        <span class="text-ar">الاشتراكات النشطة</span>
+        <span class="text-en">Enrollments</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="glass-card floating-card chart-card">
+    <h3>
+      <span class="text-ar">النشاط الأسبوعي</span>
+      <span class="text-en">Weekly activity</span>
+    </h3>
+    <div id="analytics-chart"
+         class="react-mount"
+         data-labels="{{ chart_labels|join:',' }}"
+         data-minutes="{{ chart_minutes|join:',' }}"
+         data-lessons="{{ chart_lessons|join:',' }}">
+    </div>
+  </div>
+
+  <div class="glass-card floating-card">
+    <h3>
+      <span class="text-ar">السجلات الأخيرة</span>
+      <span class="text-en">Recent activity</span>
+    </h3>
+    <ul class="activity-list">
+      {% for activity in activities %}
+      <li class="activity-item">
+        <span class="activity-type">
+          {% if is_ar %}
+            نشاط مكتمل
+          {% else %}
+            {{ activity.get_activity_type_display }}
+          {% endif %}
+        </span>
+        <span class="activity-time">
+          <span class="text-ar">منذ {{ activity.created_at|timesince }}</span>
+          <span class="text-en">{{ activity.created_at|timesince }} ago</span>
+        </span>
+      </li>
+      {% empty %}
+      <li class="text-muted">
+        <span class="text-ar">لا توجد سجلات نشاط مسجلة بعد.</span>
+        <span class="text-en">No activity recorded yet.</span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="{% static 'js/react/analytics-chart.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var el = document.getElementById('analytics-chart');
+  if (el) NexusAnalyticsChart.mount(el);
+});
+</script>
+{% endblock %}

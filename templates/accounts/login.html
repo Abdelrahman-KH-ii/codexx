@@ -1,0 +1,31 @@
+{% extends "base_hero.html" %}
+{% load static %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block hero_content %}
+<div class="hero-brand compact">
+  <img src="{% static 'img/logo.svg' %}" alt="" class="brand-logo" width="48" height="48">
+  <div class="hero-logo">DevFlow.io</div>
+  <h1 class="hero-headline"><span class="gradient-text">Welcome back</span></h1>
+  <p class="hero-sub">Continue your learning journey with AI-guided precision.</p>
+</div>
+{% endblock %}
+
+{% block glass_content %}
+<div class="glass-auth">
+  <h2 class="glass-title">Sign in</h2>
+  <form method="post" class="glass-form">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}<span class="field-error">{{ field.errors.0 }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary btn-lg btn-block">Sign in</button>
+  </form>
+  <p class="glass-footer">No account? <a href="{% url 'accounts:register' %}">Create one</a></p>
+</div>
+{% endblock %}

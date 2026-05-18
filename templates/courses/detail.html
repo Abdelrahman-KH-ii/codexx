@@ -1,0 +1,125 @@
+{% extends "base_dashboard.html" %}
+{% load course_tags %}
+
+{% block title %}{{ course|translate_title:active_lang }}{% endblock %}
+{% block page_title %}{{ course|translate_title:active_lang }}{% endblock %}
+
+{% block content %}
+<div class="course-detail">
+  <div class="course-hero-card floating-card">
+    <div class="course-hero-meta">
+      <span class="difficulty-badge difficulty-{{ course.difficulty }}">{{ course|translate_difficulty:active_lang }}</span>
+      {% if course.is_ai_powered %}
+      <span class="ai-badge">
+        <span class="text-ar">مدعوم بالذكاء الاصطناعي</span>
+        <span class="text-en">AI Powered</span>
+      </span>
+      {% endif %}
+    </div>
+    <div class="course-description" style="margin-top: 1rem; margin-bottom: 1.5rem; line-height: 1.6; opacity: 0.9; color: var(--on-surface-variant);">
+      {% if is_ar %}
+        {{ course|translate_short:active_lang }}
+      {% else %}
+        {{ course.description|linebreaks }}
+      {% endif %}
+    </div>
+    <div class="course-hero-stats" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0.75rem 0;">
+      <span title="Duration" style="display:inline-flex; align-items:center; gap:5px; font-size:0.9rem;">
+        <span class="material-symbols-outlined" style="font-size:18px; color:#a855f7;">schedule</span>
+        <span class="text-ar">{{ course.duration_hours }} ساعة</span>
+        <span class="text-en">{{ course.duration_hours }} hours</span>
+      </span>
+      <span title="Lessons" style="display:inline-flex; align-items:center; gap:5px; font-size:0.9rem;">
+        <span class="material-symbols-outlined" style="font-size:18px; color:#3b82f6;">menu_book</span>
+        <span class="text-ar">{{ course.lesson_count }} دروس</span>
+        <span class="text-en">{{ course.lesson_count }} lessons</span>
+      </span>
+      <span title="Enrolled Learners" style="display:inline-flex; align-items:center; gap:5px; font-size:0.9rem;">
+        <span class="material-symbols-outlined" style="font-size:18px; color:#f59e0b;">groups</span>
+        <span class="text-ar">{{ course.total_students }} طالب</span>
+        <span class="text-en">{{ course.total_students }} learners</span>
+      </span>
+      <span title="Enrollment Fee" style="display:inline-flex; align-items:center; gap:5px; font-size:0.9rem; color:#34d399; font-weight:700;">
+        <span class="material-symbols-outlined" style="font-size:18px;">payments</span>
+        <span class="text-ar">${{ course.price }}</span>
+        <span class="text-en">${{ course.price }}</span>
+      </span>
+    </div>
+    {% if user.is_authenticated %}
+      {% if enrollment %}
+        {% if first_lesson %}
+        <a href="{% url 'courses:lesson' course.slug first_lesson.slug %}" class="btn btn-primary">
+          <span class="text-ar">استمرار التعلم</span>
+          <span class="text-en">Continue learning</span>
+        </a>
+        {% endif %}
+      {% else %}
+      <a href="{% url 'courses:enroll' course.slug %}" class="btn btn-primary">
+        <span class="text-ar">التحاق بالدورة الآن</span>
+        <span class="text-en">Enroll now</span>
+      </a>
+      {% endif %}
+    {% else %}
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+      <span class="text-ar">سجل حساباً للالتحاق</span>
+      <span class="text-en">Sign up to enroll</span>
+    </a>
+    {% endif %}
+  </div>
+
+  <section class="modules-section">
+    <h3>
+      <span class="text-ar">منهج ومحاور الدورة</span>
+      <span class="text-en">Curriculum</span>
+    </h3>
+    {% for module in course.modules.all %}
+    <div class="module-block floating-card">
+      <h4>
+        {% if is_ar %}
+          ابدأ هنا — {{ course|translate_title:active_lang }}
+        {% else %}
+          {{ module.title }}
+        {% endif %}
+      </h4>
+      <ul class="lesson-list">
+        {% for lesson in module.lessons.all %}
+        <li class="lesson-list-item {% if lesson.id in completed_lesson_ids %}completed{% endif %}">
+          {% if enrollment %}
+          <a href="{% url 'courses:lesson' course.slug lesson.slug %}">
+            <span class="lesson-type-icon">{{ lesson.get_lesson_type_display|slice:":1" }}</span>
+            {% if is_ar %}
+              {% if lesson.slug == 'intro' %}
+                مقدمة ونظرة عامة
+              {% elif lesson.slug == 'practice' %}
+                تطبيق عملي وتحدي برمجي
+              {% else %}
+                {{ lesson.title }}
+              {% endif %}
+            {% else %}
+              {{ lesson.title }}
+            {% endif %}
+            {% if lesson.id in completed_lesson_ids %}<span class="check">✓</span>{% endif %}
+          </a>
+          {% else %}
+          <span>
+            {% if is_ar %}
+              {% if lesson.slug == 'intro' %}
+                مقدمة ونظرة عامة
+              {% elif lesson.slug == 'practice' %}
+                تطبيق عملي وتحدي برمجي
+              {% else %}
+                {{ lesson.title }}
+              {% endif %}
+            {% else %}
+              {{ lesson.title }}
+            {% endif %}
+          </span>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </section>
+</div>
+{% endblock %}

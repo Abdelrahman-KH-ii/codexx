@@ -1,0 +1,19 @@
+<header class="topbar">
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">☰</button>
+  <div class="topbar-title">
+    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+  </div>
+  <div class="topbar-actions">
+    {% if user_profile %}
+    <div class="xp-pill">
+      <span class="xp-label">XP</span>
+      <span class="xp-value">{{ user_profile.xp }}</span>
+      <div class="xp-bar"><div class="xp-fill" style="width: {{ user_profile.xp_progress_percent }}%"></div></div>
+    </div>
+    {% endif %}
+    <a href="{% url 'notifications:list' %}" class="icon-btn" aria-label="Notifications">
+      🔔
+      {% if unread_notification_count %}<span class="icon-badge">{{ unread_notification_count }}</span>{% endif %}
+    </a>
+  </div>
+</header>

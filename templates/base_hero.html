@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body_class %}hero-layout{% endblock %}
+
+{% block body %}
+<div class="hero-split">
+  <section class="hero-space" id="hero-space">
+    <canvas id="particle-canvas" aria-hidden="true"></canvas>
+    <div class="nebula nebula-1" aria-hidden="true"></div>
+    <div class="nebula nebula-2" aria-hidden="true"></div>
+    <div class="nebula nebula-3" aria-hidden="true"></div>
+    <div class="grid-overlay" aria-hidden="true"></div>
+    <div class="hero-space-content">
+      {% block hero_content %}{% endblock %}
+    </div>
+  </section>
+  <aside class="hero-glass">
+    <div class="glass-panel-inner">
+      {% include "components/messages.html" %}
+      {% block glass_content %}{% endblock %}
+    </div>
+  </aside>
+</div>
+{% endblock %}

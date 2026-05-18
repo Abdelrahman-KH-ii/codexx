@@ -1,0 +1,448 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Admin — Courses & Student Control{% endblock %}
+{% block page_title %}Course Admin Control Center{% endblock %}
+
+{% block content %}
+<div class="admin-header">
+  <div>
+    <p class="text-muted">Direct management of {{ stats.total }} courses and student subscriptions · {{ stats.published }} live courses</p>
+  </div>
+  <div class="admin-top-actions">
+    <a href="{% url 'courses:admin_create' %}" class="btn btn-primary">+ Add New Course</a>
+  </div>
+</div>
+
+<!-- Upgraded Premium Cyber-Modern Stat Cards -->
+<div class="stat-cards admin-stats">
+  <div class="stat-card floating-card stat-total-courses">
+    <div class="stat-icon-wrap">
+      <span class="material-symbols-outlined stat-icon">menu_book</span>
+    </div>
+    <div class="stat-data">
+      <span class="stat-card-value">{{ stats.total }}</span>
+      <span class="stat-card-label">Total Courses</span>
+    </div>
+  </div>
+
+  <div class="stat-card floating-card stat-total-learners">
+    <div class="stat-icon-wrap">
+      <span class="material-symbols-outlined stat-icon">groups</span>
+    </div>
+    <div class="stat-data">
+      <span class="stat-card-value">{{ stats.total_learners }}</span>
+      <span class="stat-card-label">Total Learners</span>
+    </div>
+  </div>
+
+  <div class="stat-card floating-card stat-total-revenue">
+    <div class="stat-icon-wrap">
+      <span class="material-symbols-outlined stat-icon">payments</span>
+    </div>
+    <div class="stat-data">
+      <span class="stat-card-value">${{ stats.total_revenue|floatformat:"2" }}</span>
+      <span class="stat-card-label">Estimated Revenue</span>
+    </div>
+  </div>
+
+  <div class="stat-card floating-card stat-active-subs">
+    <div class="stat-icon-wrap">
+      <span class="material-symbols-outlined stat-icon">sensors</span>
+    </div>
+    <div class="stat-data">
+      <span class="stat-card-value">{{ stats.total_real }}</span>
+      <span class="stat-card-label">Live Enrollments</span>
+    </div>
+  </div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="admin-tabs-nav glass-card">
+  <button class="tab-btn active" data-tab="courses">
+    <span class="material-symbols-outlined">menu_book</span>
+    Courses Management
+  </button>
+  <button class="tab-btn" data-tab="students">
+    <span class="material-symbols-outlined">school</span>
+    Students & Subscriptions Center
+  </button>
+</div>
+
+<!-- Tab Content: Courses Management -->
+<div id="tab-courses" class="tab-content active">
+  <div class="glass-card admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Order</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Stack</th>
+          <th>Difficulty</th>
+          <th>Price</th>
+          <th>Learners</th>
+          <th>Est. Revenue</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for course in courses %}
+        <tr class="course-row-item">
+          <td><span class="badge badge-order">#{{ course.order }}</span></td>
+          <td>
+            <div class="course-title-cell">
+              <strong>{{ course.title }}</strong>
+              <small class="text-muted">{{ course.duration_hours }}h · {{ course.lesson_count }} lessons</small>
+            </div>
+          </td>
+          <td><span class="tag tag-category">{{ course.get_category_display }}</span></td>
+          <td>
+            {% if course.stack != 'general' %}
+            <span class="tag tag-stack">{{ course.get_stack_display }}</span>
+            {% else %}
+            <span class="tag tag-muted">General</span>
+            {% endif %}
+          </td>
+          <td><span class="difficulty-text diff-{{ course.difficulty }}">{{ course.get_difficulty_display }}</span></td>
+          <td><span class="price-val">${{ course.price }}</span></td>
+          <td><span class="learners-count">{{ course.total_students }}</span></td>
+          <td><strong class="revenue-val">${{ course.total_revenue|floatformat:"2" }}</strong></td>
+          <td>
+            {% if course.is_published %}
+            <span class="tag tag-success">Live</span>
+            {% else %}
+            <span class="tag tag-draft">Draft</span>
+            {% endif %}
+          </td>
+          <td class="admin-actions">
+            <a href="{% url 'courses:admin_manage' course.slug %}" class="btn btn-ghost btn-sm">Modules</a>
+            <a href="{% url 'courses:admin_edit' course.slug %}" class="btn btn-ghost btn-sm">Edit</a>
+            <form method="post" action="{% url 'courses:admin_toggle_publish' course.slug %}" class="inline-form">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm">{% if course.is_published %}Hide{% else %}Publish{% endif %}</button>
+            </form>
+            <form method="post" action="{% url 'courses:admin_delete' course.slug %}" class="inline-form" onsubmit="return confirm('Delete this course?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm" style="color:#ffb4ab">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="10" class="text-muted text-center">No courses found. Please seed the database.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tab Content: Students & Subscriptions Center -->
+<div id="tab-students" class="tab-content">
+  <!-- Manual Enrollment Widget -->
+  <div class="glass-card enroll-student-card">
+    <h3 class="widget-title">
+      <span class="material-symbols-outlined widget-icon">person_add</span>
+      Manual Student Enrollment
+    </h3>
+    <form method="post" action="{% url 'courses:admin_enroll_student' %}" class="enroll-form">
+      {% csrf_token %}
+      <div class="enroll-form-grid">
+        <div class="form-group">
+          <label for="enroll-user">Select Student User</label>
+          <select name="user_id" id="enroll-user" class="glass-input select-field" required>
+            <option value="">-- Choose User by Email --</option>
+            {% for student in students %}
+            <option value="{{ student.id }}">{{ student.email }} (L{{ student.profile.level|default:1 }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="enroll-course">Select Course</label>
+          <select name="course_id" id="enroll-course" class="glass-input select-field" required>
+            <option value="">-- Choose Active Course --</option>
+            {% for c in all_courses %}
+            <option value="{{ c.id }}">{{ c.title }} [${{ c.price }}]</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-actions-inline">
+          <button type="submit" class="btn btn-primary">+ Enroll Student</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Student Registry & Active Subscriptions list -->
+  <div class="glass-card students-registry-card">
+    <div class="registry-header">
+      <h3 class="widget-title">
+        <span class="material-symbols-outlined widget-icon">assignment_ind</span>
+        Registered Students Registry
+      </h3>
+      <form method="get" class="student-search-form">
+        <input type="hidden" name="active_tab_state" value="students">
+        <input type="search" name="student_q" value="{{ student_q }}" placeholder="Search students by email..." class="glass-input student-search-input">
+        <button type="submit" class="btn btn-ghost btn-sm">Search</button>
+        {% if student_q %}
+        <a href="{% url 'courses:admin_dashboard' %}" class="btn btn-ghost btn-sm">Clear</a>
+        {% endif %}
+      </form>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User Info</th>
+            <th>Account Created</th>
+            <th>Rank (Level/XP)</th>
+            <th>Active Subscriptions & Courses</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students %}
+          <tr class="student-row-item">
+            <td>
+              <div class="student-info-cell">
+                <span class="student-avatar-placeholder">
+                  {{ student.email|slice:":2"|upper }}
+                </span>
+                <div class="student-meta">
+                  <strong>{{ student.email }}</strong>
+                  <small class="text-muted">Username: {{ student.username }}</small>
+                </div>
+              </div>
+            </td>
+            <td><span class="text-muted">{{ student.date_joined|date:"M d, Y" }}</span></td>
+            <td>
+              <div class="rank-cell">
+                <span class="badge badge-level">Level {{ student.profile.level|default:1 }}</span>
+                <span class="text-muted small">{{ student.profile.xp|default:0 }} XP</span>
+              </div>
+            </td>
+            <td>
+              <div class="student-enrollments-list">
+                {% for enrollment in student.enrollments.all %}
+                <div class="enrollment-tag glass-card">
+                  <span class="course-name">{{ enrollment.course.title }}</span>
+                  <form method="post" action="{% url 'courses:admin_unenroll_student' enrollment.id %}" class="inline-form" onsubmit="return confirm('Unenroll student from this course?');">
+                    {% csrf_token %}
+                    <button type="submit" class="unenroll-btn" title="Unenroll student">
+                      <span class="material-symbols-outlined">close</span>
+                    </button>
+                  </form>
+                </div>
+                {% empty %}
+                <span class="text-muted small">No active enrollments</span>
+                {% endfor %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-muted text-center">No students match the search filter.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.admin-stats { margin-bottom: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+
+/* Stat Cards Glow Styling */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: rgba(26, 32, 44, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.stat-icon-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+}
+.stat-icon { font-size: 24px; }
+.stat-data { display: flex; flex-direction: column; }
+.stat-card-value { font-size: 1.6rem; font-weight: 700; color: var(--on-surface); font-family: var(--font-mono); }
+.stat-card-label { font-size: 0.75rem; text-transform: uppercase; color: var(--on-surface-variant); font-weight: 600; letter-spacing: 0.05em; margin-top: 0.1rem; }
+
+/* Glowing colors for metrics */
+.stat-total-courses .stat-icon { color: #a855f7; }
+.stat-total-courses { box-shadow: 0 0 15px rgba(168, 85, 247, 0.05); border-left: 3px solid #a855f7; }
+.stat-total-learners .stat-icon { color: #3b82f6; }
+.stat-total-learners { box-shadow: 0 0 15px rgba(59, 130, 246, 0.05); border-left: 3px solid #3b82f6; }
+.stat-total-revenue .stat-icon { color: #10b981; }
+.stat-total-revenue { box-shadow: 0 0 15px rgba(16, 185, 129, 0.05); border-left: 3px solid #10b981; }
+.stat-active-subs .stat-icon { color: #f59e0b; }
+.stat-active-subs { box-shadow: 0 0 15px rgba(245, 158, 11, 0.05); border-left: 3px solid #f59e0b; }
+
+/* Tabs Navigation Styling */
+.admin-tabs-nav {
+  display: flex;
+  gap: 1rem;
+  padding: 0.65rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(18, 22, 33, 0.7);
+}
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  border: none;
+  color: var(--on-surface-variant);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.25s ease;
+}
+.tab-btn span { font-size: 18px; }
+.tab-btn:hover { color: var(--on-surface); background: rgba(255, 255, 255, 0.03); }
+.tab-btn.active { color: #ffffff; background: rgba(255, 255, 255, 0.08); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+/* Tab Visibility System */
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Upgraded Tables */
+.admin-table-wrap { overflow-x: auto; padding: 0; border: 1px solid rgba(255, 255, 255, 0.04); background: rgba(18, 22, 33, 0.4); border-radius: var(--radius-lg); }
+.admin-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.admin-table th, .admin-table td { padding: 1rem 1.2rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+.admin-table th { color: var(--on-surface-variant); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; background: rgba(255,255,255,0.01); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.course-row-item:hover, .student-row-item:hover { background: rgba(255, 255, 255, 0.01); }
+
+.course-title-cell { display: flex; flex-direction: column; gap: 0.2rem; }
+.course-title-cell strong { font-size: 0.95rem; color: #ffffff; }
+
+.badge { font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; font-family: var(--font-mono); }
+.badge-order { background: rgba(255, 255, 255, 0.05); color: var(--outline); }
+.badge-level { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.25); }
+
+.tag { font-size: 0.65rem; padding: 0.25rem 0.55rem; border-radius: 4px; font-family: var(--font-mono); font-weight: 600; text-transform: uppercase; }
+.tag-category { background: rgba(168,85,247,0.15); color: #e9d5ff; border: 1px solid rgba(168,85,247,0.25); }
+.tag-stack { background: rgba(6,182,212,0.12); color: #a5f3fc; border: 1px solid rgba(6,182,212,0.25); }
+.tag-success { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+.tag-draft { background: rgba(132,148,149,0.12); color: #94a3b8; border: 1px solid rgba(132,148,149,0.25); }
+.tag-muted { background: rgba(255,255,255,0.05); color: var(--outline); }
+
+.difficulty-text { font-size: 0.8rem; font-weight: 600; }
+.difficulty-text.diff-beginner { color: #4ade80; }
+.difficulty-text.diff-intermediate { color: #f59e0b; }
+.difficulty-text.diff-advanced { color: #f87171; }
+
+.price-val { font-family: var(--font-mono); color: #ffffff; font-weight: 600; }
+.learners-count { font-family: var(--font-mono); color: #e2e8f0; }
+.revenue-val { font-family: var(--font-mono); color: #10b981; font-weight: 700; font-size: 0.95rem; }
+
+.admin-actions { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.inline-form { display: inline-flex; margin: 0; }
+
+/* Student Enrollments Dashboard Widget */
+.enroll-student-card { padding: 1.5rem; margin-bottom: 1.5rem; background: rgba(26, 32, 44, 0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: var(--radius-lg); }
+.widget-title { display: flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; color: #ffffff; }
+.widget-icon { color: var(--primary-fixed); }
+.enroll-form-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: flex-end; }
+@media (max-width: 768px) { .enroll-form-grid { grid-template-columns: 1fr; } }
+.select-field { width: 100%; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(18, 22, 33, 0.85); color: #ffffff; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); }
+
+/* Registry & Student search bar */
+.students-registry-card { padding: 1.5rem; background: rgba(26, 32, 44, 0.35); border: 1px solid rgba(255,255,255,0.05); }
+.registry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem; }
+.student-search-form { display: flex; gap: 0.5rem; align-items: center; }
+.student-search-input { min-width: 260px; padding: 0.5rem 0.75rem; border: 1px solid rgba(255,255,255,0.08); background: rgba(18, 22, 33, 0.6); }
+
+.student-info-cell { display: flex; align-items: center; gap: 0.75rem; }
+.student-avatar-placeholder { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(59, 130, 246, 0.15); color: #60a5fa; font-weight: 700; font-size: 0.8rem; border: 1px solid rgba(59,130,246,0.25); }
+.student-meta { display: flex; flex-direction: column; gap: 0.1rem; }
+.student-meta strong { font-size: 0.9rem; color: #ffffff; }
+
+.rank-cell { display: flex; flex-direction: column; gap: 0.2rem; }
+
+.student-enrollments-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.enrollment-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  transition: all 0.2s ease;
+}
+.enrollment-tag:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15); }
+.enrollment-tag .course-name { color: #e2e8f0; font-weight: 500; }
+.unenroll-btn { background: transparent; border: none; padding: 0; margin: 0; color: #fca5a5; display: inline-flex; align-items: center; cursor: pointer; transition: color 0.15s ease; }
+.unenroll-btn span { font-size: 13px; font-weight: bold; }
+.unenroll-btn:hover { color: #f87171; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const contents = document.querySelectorAll('.tab-content');
+    
+    // Load active tab from URL query or localStorage if available
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('active_tab_state');
+    const activeTab = tabFromUrl || localStorage.getItem('admin_active_tab') || 'courses';
+    switchTab(activeTab);
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const target = this.dataset.tab;
+            switchTab(target);
+        });
+    });
+    
+    function switchTab(tabId) {
+        tabs.forEach(t => {
+            if (t.dataset.tab === tabId) {
+                t.classList.add('active');
+            } else {
+                t.classList.remove('active');
+            }
+        });
+        contents.forEach(c => {
+            if (c.id === `tab-${tabId}`) {
+                c.classList.add('active');
+            } else {
+                c.classList.remove('active');
+            }
+        });
+        localStorage.setItem('admin_active_tab', tabId);
+    }
+});
+</script>
+{% endblock %}

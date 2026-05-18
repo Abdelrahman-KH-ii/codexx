@@ -1,0 +1,235 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+{% load course_tags %}
+
+{% block title %}
+  {% if is_ar %}
+    {% if lesson.slug == 'intro' %}
+      مقدمة ونظرة عامة
+    {% elif lesson.slug == 'practice' %}
+      تطبيق عملي وتحدي برمجي
+    {% else %}
+      {{ lesson.title }}
+    {% endif %}
+  {% else %}
+    {{ lesson.title }}
+  {% endif %}
+{% endblock %}
+
+{% block page_title %}
+  {% if is_ar %}
+    {% if lesson.slug == 'intro' %}
+      مقدمة ونظرة عامة
+    {% elif lesson.slug == 'practice' %}
+      تطبيق عملي وتحدي برمجي
+    {% else %}
+      {{ lesson.title }}
+    {% endif %}
+  {% else %}
+    {{ lesson.title }}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="lesson-page-stitch">
+  <aside class="lesson-sidebar glass-card">
+    <p class="section-label">{{ course|translate_title:active_lang }}</p>
+    {% for module in modules %}
+    <div class="lesson-module">
+      <h4>
+        {% if is_ar %}
+          ابدأ هنا — {{ course|translate_title:active_lang }}
+        {% else %}
+          {{ module.title }}
+        {% endif %}
+      </h4>
+      <ul>
+        {% for les in module.lessons.all %}
+        <li class="{% if les.id == lesson.id %}active{% endif %}">
+          <a href="{% url 'courses:lesson' course.slug les.slug %}">
+            {% if is_ar %}
+              {% if les.slug == 'intro' %}
+                مقدمة ونظرة عامة
+              {% elif les.slug == 'practice' %}
+                تطبيق عملي وتحدي برمجي
+              {% else %}
+                {{ les.title }}
+              {% endif %}
+            {% else %}
+              {{ les.title }}
+            {% endif %}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  </aside>
+
+  <div class="lesson-main-wrap">
+    <div class="lesson-meta-bar">
+      <span class="lesson-type-badge">
+        {% if is_ar %}
+          {% if lesson.lesson_type == 'reading' %}
+            قراءة وتلخيص
+          {% elif lesson.lesson_type == 'coding' %}
+            تحدي برمجي
+          {% else %}
+            {{ lesson.get_lesson_type_display }}
+          {% endif %}
+        {% else %}
+          {{ lesson.get_lesson_type_display }}
+        {% endif %}
+      </span>
+      <span>
+        <span class="text-ar">{{ lesson.duration_minutes }} دقيقة · {{ lesson.xp_reward }} نقطة خبرة</span>
+        <span class="text-en">{{ lesson.duration_minutes }} min · {{ lesson.xp_reward }} XP</span>
+      </span>
+      {% if progress.completed %}
+      <span class="completed-badge">
+        <span class="text-ar">✓ مكتملة</span>
+        <span class="text-en">✓ Completed</span>
+      </span>
+      {% endif %}
+    </div>
+
+    {% if is_coding %}
+    <div class="ide-workspace" id="ide-workspace">
+      <div class="ide-toolbar">
+        <div class="ide-tab">
+          <span class="material-symbols-outlined" style="font-size:16px;color:#4a8eff">code</span>
+          {{ lesson.slug }}.py
+        </div>
+        <button type="button" class="btn-run" id="ide-run-trigger">
+          <span class="material-symbols-outlined">play_arrow</span>
+          <span class="text-ar">تشغيل الكود</span>
+          <span class="text-en">RUN CODE</span>
+        </button>
+      </div>
+      <div class="ide-split">
+        <div class="ide-editor-pane">
+          <div id="code-playground"
+               class="react-mount ide-playground-mount"
+               data-starter="{{ lesson.code_starter|escapejs }}"
+               data-lesson-id="{{ lesson.id }}"
+               data-complete-url="{% url 'courses:complete_lesson' course.slug lesson.slug %}"></div>
+        </div>
+        <div class="ide-preview-pane">
+          <div class="ide-preview-chrome">
+            <div class="terminal-dots"><span></span><span></span><span></span></div>
+            <span class="preview-url">localhost:8000/preview</span>
+          </div>
+          <div class="ide-preview-body" id="ide-preview-output">
+            <p class="preview-placeholder">
+              <span class="text-ar">قم بتشغيل الكود لمشاهدة المخرجات</span>
+              <span class="text-en">Run your code to see output</span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="ide-terminal-bar">
+        <div class="ide-terminal-tabs">
+          <span class="active">
+            <span class="text-ar">المحاكي</span>
+            <span class="text-en">TERMINAL</span>
+          </span>
+          <span>
+            <span class="text-ar">المخرجات</span>
+            <span class="text-en">OUTPUT</span>
+          </span>
+        </div>
+        <pre class="ide-terminal-log" id="ide-terminal-log">{% if is_ar %}جاهز للتنفيذ.{% else %}Ready.{% endif %}</pre>
+      </div>
+    </div>
+    {% else %}
+    <article class="glass-card lesson-content-card">
+      <div class="lesson-content prose" style="line-height: 1.7;">
+        {% if is_ar %}
+          {% if lesson.slug == 'intro' %}
+            <p>مرحباً بك في هذا الكورس! في هذا الدرس التمهيدي، سنغطي الأهداف الأساسية لهذه الدورة، ونضع أمامك مسار النجاح، ونعرفك بالأدوات والبيئات البرمجية الرئيسية التي ستستخدمها طوال رحلتك التعليمية.</p>
+            <p>بحلول نهاية هذا الدرس، سيكون لديك فهم مفاهيمي متين للتقنيات والمسار البرمجي وستكون جاهزاً تماماً لكتابة السطر البرمجي الأول الخاص بك.</p>
+          {% else %}
+            {{ lesson.content|linebreaks }}
+          {% endif %}
+        {% else %}
+          {{ lesson.content|linebreaks }}
+        {% endif %}
+      </div>
+    </article>
+    {% endif %}
+
+    <div class="lesson-nav">
+      {% if prev_lesson %}
+      <a href="{% url 'courses:lesson' course.slug prev_lesson.slug %}" class="btn btn-ghost">
+        <span class="text-ar">← الدرس السابق</span>
+        <span class="text-en">← Previous</span>
+      </a>
+      {% endif %}
+      {% if not is_coding and not progress.completed %}
+      <form method="post" action="{% url 'courses:complete_lesson' course.slug lesson.slug %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">
+          <span class="text-ar">تحديد كمكتمل</span>
+          <span class="text-en">Mark complete</span>
+        </button>
+      </form>
+      {% endif %}
+      {% if next_lesson %}
+      <a href="{% url 'courses:lesson' course.slug next_lesson.slug %}" class="btn btn-primary">
+        <span class="text-ar">الدرس التالي →</span>
+        <span class="text-en">Next →</span>
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.lesson-page-stitch { display: grid; grid-template-columns: 240px 1fr; gap: 1rem; }
+@media (max-width: 900px) { .lesson-page-stitch { grid-template-columns: 1fr; } }
+.lesson-main-wrap { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.lesson-meta-bar { display: flex; gap: 1rem; align-items: center; font-size: 0.85rem; color: var(--on-surface-variant); }
+.ide-playground-mount { flex: 1; display: flex; flex-direction: column; min-height: 280px; padding: 0.5rem; }
+.ide-playground-mount .playground-editor { flex: 1; min-height: 260px; border: none; border-radius: 0; }
+.ide-playground-mount .playground-toolbar { padding: 0.5rem; border-top: 1px solid rgba(58,73,75,0.2); }
+.ide-preview-chrome { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; background: var(--surface-container); border-bottom: 1px solid rgba(58,73,75,0.1); font-family: var(--font-mono); font-size: 0.75rem; color: var(--on-surface-variant); }
+.ide-preview-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem; background: var(--surface-container-lowest); }
+.preview-placeholder { color: var(--outline); font-size: 0.9rem; }
+.ide-terminal-log { flex: 1; margin: 0; padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--on-surface-variant); overflow: auto; }
+.lesson-content-card { margin-bottom: 0; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{% if is_coding %}
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="{% static 'js/react/playground.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var el = document.getElementById('code-playground');
+  if (el) NexusPlayground.mount(el);
+  var runBtn = document.getElementById('ide-run-trigger');
+  if (runBtn) {
+    runBtn.addEventListener('click', function() {
+      var run = el && el.querySelector('.playground-toolbar .btn-primary');
+      if (run) run.click();
+    });
+  }
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.playground-toolbar .btn-primary')) {
+      setTimeout(function() {
+        var out = el && el.querySelector('.playground-output');
+        if (out) {
+          document.getElementById('ide-terminal-log').textContent = out.textContent;
+          document.getElementById('ide-preview-output').innerHTML = '<pre style="text-align:left;width:100%;font-family:var(--font-mono);font-size:0.8rem;color:var(--on-surface)">' + out.textContent + '</pre>';
+        }
+      }, 700);
+    }
+  });
+});
+</script>
+{% endif %}
+{% endblock %}

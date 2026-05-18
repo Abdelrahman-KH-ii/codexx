@@ -1,0 +1,89 @@
+{% load static %}
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <a href="{% url 'home' %}" class="brand-link">
+      <img src="{% static 'img/logo.svg' %}" alt="" class="brand-logo" width="32" height="32">
+      <span class="brand-text">DevFlow<span class="brand-accent">.io</span></span>
+    </a>
+  </div>
+  
+  <!-- Premium Language Toggle Pill Button -->
+  <div class="lang-toggle-wrapper" style="display: flex; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 20px; padding: 2px; margin: 0.5rem 1rem 1rem 1rem; gap: 2px;">
+    <button id="lang-btn-ar" class="lang-toggle-btn active" style="flex: 1; background: transparent; border: none; border-radius: 18px; padding: 0.35rem 0.5rem; color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); text-align: center;" onclick="setAppLanguage('ar')">العربية</button>
+    <button id="lang-btn-en" class="lang-toggle-btn" style="flex: 1; background: transparent; border: none; border-radius: 18px; padding: 0.35rem 0.5rem; color: #94a3b8; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); text-align: center;" onclick="setAppLanguage('en')">English</button>
+  </div>
+
+  <div class="sidebar-level">
+    {% if user_profile %}
+    <p class="sidebar-level-title">
+      <span class="text-ar">حالة التدفق</span>
+      <span class="text-en">Flow State</span>
+    </p>
+    <p class="sidebar-level-meta">
+      <span class="text-ar">المستوى {{ user_profile.level }} · {{ user_profile.xp }} XP</span>
+      <span class="text-en">Level {{ user_profile.level }} · {{ user_profile.xp }} XP</span>
+    </p>
+    {% endif %}
+  </div>
+  <nav class="sidebar-nav">
+    <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">dashboard</span>
+      <span class="text-ar">لوحة التحكم</span>
+      <span class="text-en">Dashboard</span>
+    </a>
+    <a href="{% url 'courses:list' %}" class="nav-item {% if request.resolver_match.namespace == 'courses' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">terminal</span>
+      <span class="text-ar">الكورسات</span>
+      <span class="text-en">Courses</span>
+    </a>
+    <a href="{% url 'ai_assistant:chat' %}" class="nav-item {% if request.resolver_match.namespace == 'ai_assistant' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">smart_toy</span>
+      <span class="text-ar">المساعد الذكي</span>
+      <span class="text-en">AI Assistant</span>
+    </a>
+    <a href="{% url 'analytics:index' %}" class="nav-item {% if request.resolver_match.namespace == 'analytics' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">monitoring</span>
+      <span class="text-ar">التحليلات</span>
+      <span class="text-en">Analytics</span>
+    </a>
+    <a href="{% url 'notifications:list' %}" class="nav-item {% if request.resolver_match.namespace == 'notifications' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">notifications</span>
+      <span class="text-ar">الإشعارات</span>
+      <span class="text-en">Notifications</span>
+      {% if unread_notification_count %}
+      <span class="nav-badge">{{ unread_notification_count }}</span>
+      {% endif %}
+    </a>
+    {% if user.is_staff %}
+    <a href="{% url 'courses:admin_dashboard' %}" class="nav-item nav-admin {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">admin_panel_settings</span>
+      <span class="text-ar">لوحة الإدارة</span>
+      <span class="text-en">Admin Panel</span>
+    </a>
+    {% endif %}
+  </nav>
+  <div class="sidebar-footer">
+  {% if user_profile %}
+    <div class="sidebar-user">
+      <div class="user-avatar">{{ user.email|first|upper }}</div>
+      <div class="user-meta">
+        <span class="user-name">{{ user.username }}</span>
+        <span class="user-level">
+          <span class="text-ar">مطور أول · L{{ user_profile.level }}</span>
+          <span class="text-en">Senior Dev · L{{ user_profile.level }}</span>
+        </span>
+      </div>
+    </div>
+  {% endif %}
+    <a href="{% url 'accounts:profile' %}" class="nav-item">
+      <span class="material-symbols-outlined nav-icon">person</span>
+      <span class="text-ar">الملف الشخصي</span>
+      <span class="text-en">Profile</span>
+    </a>
+    <a href="{% url 'accounts:logout' %}" class="nav-item nav-muted">
+      <span class="material-symbols-outlined nav-icon">logout</span>
+      <span class="text-ar">تسجيل الخروج</span>
+      <span class="text-en">Sign out</span>
+    </a>
+  </div>
+</aside>

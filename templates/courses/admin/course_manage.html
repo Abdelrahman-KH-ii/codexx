@@ -1,0 +1,74 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Manage — {{ course.title }}{% endblock %}
+{% block page_title %}Manage: {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="manage-header">
+  <div>
+    <span class="tag tag-category">{{ course.get_category_display }}</span>
+    <span class="tag tag-stack">{{ course.get_stack_display }}</span>
+    <p class="text-muted">{{ course.lesson_count }} lessons · {{ course.duration_hours }}h</p>
+  </div>
+  <div class="manage-actions">
+    <a href="{% url 'courses:admin_edit' course.slug %}" class="btn btn-ghost btn-sm">Edit course</a>
+    <a href="{% url 'courses:detail' course.slug %}" class="btn btn-ghost btn-sm" target="_blank">Preview</a>
+    <a href="{% url 'courses:admin_dashboard' %}" class="btn btn-ghost btn-sm">← All courses</a>
+  </div>
+</div>
+
+<div class="manage-grid">
+  <section class="glass-card">
+    <h3>Add module</h3>
+    <form method="post" action="{% url 'courses:admin_module_add' course.slug %}" class="glass-form">
+      {% csrf_token %}
+      {{ module_form.as_p }}
+      <button type="submit" class="btn btn-primary btn-sm">Add module</button>
+    </form>
+  </section>
+
+  {% for module in course.modules.all %}
+  <section class="glass-card floating-card">
+    <h3>Module {{ module.order|add:1 }}: {{ module.title }}</h3>
+    <ul class="lesson-admin-list">
+      {% for lesson in module.lessons.all %}
+      <li>
+        <span class="lesson-type-icon">{{ lesson.get_lesson_type_display|slice:":1" }}</span>
+        {{ lesson.title }}
+        <span class="text-muted">({{ lesson.duration_minutes }}m · {{ lesson.xp_reward }} XP)</span>
+      </li>
+      {% empty %}
+      <li class="text-muted">No lessons yet.</li>
+      {% endfor %}
+    </ul>
+    <details class="add-lesson-details">
+      <summary class="btn btn-ghost btn-sm">+ Add lesson</summary>
+      <form method="post" action="{% url 'courses:admin_lesson_add' course.slug module.id %}" class="glass-form" style="margin-top:1rem">
+        {% csrf_token %}
+        {% for field in lesson_form %}
+        <div class="form-group">
+          <label>{{ field.label }}</label>
+          {{ field }}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-sm">Save lesson</button>
+      </form>
+    </details>
+  </section>
+  {% empty %}
+  <p class="text-muted">Add a module above to start building curriculum.</p>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.manage-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.manage-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.manage-grid { display: flex; flex-direction: column; gap: 1rem; }
+.lesson-admin-list { list-style: none; margin: 1rem 0; }
+.lesson-admin-list li { padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; gap: 0.5rem; }
+.add-lesson-details summary { cursor: pointer; list-style: none; }
+.add-lesson-details summary::-webkit-details-marker { display: none; }
+</style>
+{% endblock %}

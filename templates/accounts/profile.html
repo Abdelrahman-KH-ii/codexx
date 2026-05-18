@@ -1,0 +1,36 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Profile{% endblock %}
+{% block page_title %}Profile{% endblock %}
+
+{% block content %}
+<div class="profile-grid">
+  <div class="glass-card floating-card">
+    <div class="profile-header">
+      <div class="profile-avatar-lg">{{ user.email|first|upper }}</div>
+      <div>
+        <h2>{{ user.username }}</h2>
+        <p class="text-muted">{{ user.email }}</p>
+        <div class="level-badge">Level {{ profile.level }} · {{ profile.xp }} XP</div>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="mini-stat"><span>{{ profile.streak_days }}</span><label>Day streak</label></div>
+      <div class="mini-stat"><span>{{ profile.xp_progress_percent }}%</span><label>To next level</label></div>
+    </div>
+  </div>
+  <div class="glass-card">
+    <h3>Edit profile</h3>
+    <form method="post" enctype="multipart/form-data" class="glass-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label>{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Save changes</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

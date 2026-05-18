@@ -1,0 +1,88 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}
+  <span class="text-ar">الكورسات</span>
+  <span class="text-en">Courses</span>
+{% endblock %}
+{% block page_title %}
+  <span class="text-ar">الكورسات البرمجية</span>
+  <span class="text-en">Developer Courses</span>
+{% endblock %}
+
+{% block content %}
+<div class="courses-toolbar glass-card">
+  <form method="get" class="filter-form">
+    <input type="search" name="q" value="{{ search_q }}" placeholder="البحث في الكورسات... / Search courses…" class="glass-input filter-search">
+    <select name="category" class="glass-input filter-select" onchange="this.form.submit()">
+      <option value="">كل التصنيفات / All categories</option>
+      {% for val, label in categories %}
+      <option value="{{ val }}" {% if active_category == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="stack" class="glass-input filter-select" onchange="this.form.submit()">
+      <option value="">كل التقنيات / All stacks</option>
+      {% for val, label in stacks %}
+      <option value="{{ val }}" {% if active_stack == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="difficulty" class="glass-input filter-select" onchange="this.form.submit()">
+      <option value="">كل المستويات / All levels</option>
+      {% for val, label in difficulties %}
+      <option value="{{ val }}" {% if active_difficulty == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">
+      <span class="text-ar">تصفية</span>
+      <span class="text-en">Filter</span>
+    </button>
+    {% if active_category or active_stack or active_difficulty or search_q %}
+    <a href="{% url 'courses:list' %}" class="btn btn-ghost btn-sm">
+      <span class="text-ar">مسح</span>
+      <span class="text-en">Clear</span>
+    </a>
+    {% endif %}
+  </form>
+  <p class="text-muted filter-count">
+    <span class="text-ar">تم العثور على {{ courses|length }} كورس</span>
+    <span class="text-en">Found {{ courses|length }} course{{ courses|length|pluralize }}</span>
+  </p>
+</div>
+
+{% if user.is_staff %}
+<p class="admin-link-bar">
+  <a href="{% url 'courses:admin_dashboard' %}" class="btn btn-ghost btn-sm">
+    <span class="text-ar">⚙ الإدارة: التحكم والاشتراكات</span>
+    <span class="text-en">⚙ Admin: Manage courses</span>
+  </a>
+</p>
+{% endif %}
+
+<div class="course-grid">
+  {% for course in courses %}
+    {% include "components/course_card.html" %}
+  {% empty %}
+  <p class="text-muted">
+    <span class="text-ar">لا توجد كورسات تطابق خيارات التصفية الخاصة بك.</span>
+    <span class="text-en">No courses match your filters.</span>
+  </p>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.courses-toolbar { padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.filter-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.filter-search { flex: 1; min-width: 180px; }
+.filter-select { min-width: 140px; }
+.filter-count { margin-top: 0.75rem; font-size: 0.85rem; }
+.admin-link-bar { margin-bottom: 1rem; }
+.glass-input.filter-select, .glass-input.filter-search {
+  border: 1px solid rgba(58,73,75,0.4);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+}
+</style>
+{% endblock %}

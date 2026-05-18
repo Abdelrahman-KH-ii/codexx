@@ -1,0 +1,74 @@
+/* Cyber-Modern IDE — from Stitch design system */
+:root {
+  --font-sans: 'Geist', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --background: #131314;
+  --surface: #131314;
+  --surface-dim: #131314;
+  --surface-container-lowest: #0e0e0f;
+  --surface-container-low: #1c1b1c;
+  --surface-container: #201f20;
+  --surface-container-high: #2a2a2b;
+  --surface-container-highest: #353436;
+  --surface-variant: #353436;
+
+  --on-background: #e5e2e3;
+  --on-surface: #e5e2e3;
+  --on-surface-variant: #b9cacb;
+  --outline: #849495;
+  --outline-variant: #3a494b;
+
+  --primary: #e3fdff;
+  --primary-fixed: #6ff6ff;
+  --primary-fixed-dim: #00dce6;
+  --primary-container: #00f3ff;
+  --on-primary: #00373a;
+  --on-primary-container: #006b71;
+  --on-primary-fixed: #002022;
+
+  --secondary: #adc7ff;
+  --secondary-container: #4a8eff;
+  --on-secondary-container: #00285b;
+
+  --tertiary-container: #ecd2ff;
+  --on-tertiary-container: #862dd4;
+  --tertiary-fixed-dim: #ddb7ff;
+
+  --success: #10b981;
+  --success-bright: #4ade80;
+  --error: #ffb4ab;
+
+  --color-glass: rgba(42, 42, 43, 0.72);
+  --color-glass-light: rgba(255, 255, 255, 0.08);
+  --color-glass-border: rgba(255, 255, 255, 0.1);
+  --color-text: var(--on-surface);
+  --color-text-muted: var(--on-surface-variant);
+  --color-text-light: var(--on-surface);
+  --color-text-dim: var(--outline);
+
+  --accent-cyan: var(--primary-container);
+  --accent-violet: #a855f7;
+  --accent-blue: var(--secondary-container);
+  --gradient-primary: linear-gradient(135deg, #00f3ff 0%, #4a8eff 50%, #a855f7 100%);
+  --gradient-glow: radial-gradient(ellipse at 30% 20%, rgba(0, 243, 255, 0.2), transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(168, 85, 247, 0.15), transparent 50%);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --shadow-glow: 0 0 20px rgba(0, 243, 255, 0.15);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 20px 60px rgba(0, 0, 0, 0.5);
+  --neon-glow-cyan: 0 0 20px rgba(0, 243, 255, 0.15);
+
+  --sidebar-width: 260px;
+  --spacing-base: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 24px;
+  --spacing-lg: 48px;
+  --spacing-margin: 32px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

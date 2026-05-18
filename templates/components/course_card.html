@@ -1,0 +1,52 @@
+{% load course_tags %}
+<article class="course-card floating-card" data-animate-card>
+  <div class="course-card-glow"></div>
+  <div class="course-card-header">
+    <span class="tag tag-category">{{ course|translate_category:active_lang }}</span>
+    {% if course.stack != 'general' %}<span class="tag tag-stack">{{ course|translate_stack:active_lang }}</span>{% endif %}
+    <span class="difficulty-badge difficulty-{{ course.difficulty }}">{{ course|translate_difficulty:active_lang }}</span>
+  </div>
+  <h3 class="course-card-title"><a href="{{ course.get_absolute_url }}">{{ course|translate_title:active_lang }}</a></h3>
+  <p class="course-card-desc">{{ course|translate_short:active_lang }}</p>
+  <div class="course-card-meta">
+    <span title="Duration" style="display:inline-flex; align-items:center; gap:3px;">
+      <span class="material-symbols-outlined" style="font-size:15px;">schedule</span>
+      <span class="text-ar">{{ course.duration_hours }} ساعة</span>
+      <span class="text-en">{{ course.duration_hours }}h</span>
+    </span>
+    <span title="Enrolled Learners" style="display:inline-flex; align-items:center; gap:3px;">
+      <span class="material-symbols-outlined" style="font-size:15px;">groups</span>
+      <span class="text-ar">{{ course.total_students }} طالب</span>
+      <span class="text-en">{{ course.total_students }} students</span>
+    </span>
+    <span title="Price" style="display:inline-flex; align-items:center; gap:3px; color:#34d399; font-weight:600;">
+      <span class="material-symbols-outlined" style="font-size:15px;">payments</span>
+      <span class="text-ar">${{ course.price }}</span>
+      <span class="text-en">${{ course.price }}</span>
+    </span>
+  </div>
+  <div class="course-card-actions">
+    <a href="{{ course.get_absolute_url }}" class="btn btn-ghost">
+      <span class="text-ar">عرض الكورس</span>
+      <span class="text-en">View</span>
+    </a>
+    {% if user.is_authenticated %}
+      {% if course.id in enrolled_ids %}
+      <a href="{{ course.get_absolute_url }}" class="btn btn-primary">
+        <span class="text-ar">استمرار المذاكرة</span>
+        <span class="text-en">Continue</span>
+      </a>
+      {% else %}
+      <a href="{% url 'courses:enroll' course.slug %}" class="btn btn-primary">
+        <span class="text-ar">التحاق بالدورة</span>
+        <span class="text-en">Enroll</span>
+      </a>
+      {% endif %}
+    {% else %}
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+      <span class="text-ar">ابدأ الآن</span>
+      <span class="text-en">Get Started</span>
+    </a>
+    {% endif %}
+  </div>
+</article>
