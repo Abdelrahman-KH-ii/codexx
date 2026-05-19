@@ -177,3 +177,73 @@ class LessonProgress(models.Model):
     def __str__(self):
         status = '✓' if self.completed else '…'
         return f'{status} {self.user.email} — {self.lesson.title}'
+
+
+class Assignment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='assignments')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    points = models.PositiveIntegerField(default=100)
+    due_date = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.course.title})"
+
+
+class AssignmentSubmission(models.Model):
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='assignment_submissions')
+    code_submitted = models.TextField()
+    language = models.CharField(max_length=50, default='python')
+    score = models.PositiveIntegerField(null=True, blank=True)
+    feedback = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['user', 'assignment']]
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.assignment.title}"
+
+
+class Exam(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='exams')
+    title = models.CharField(max_length=200)
+    duration_minutes = models.PositiveIntegerField(default=30)
+    points = models.PositiveIntegerField(default=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} ({self.course.title})"
+
+
+class ExamQuestion(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='questions')
+    question_text = models.TextField()
+    option_a = models.CharField(max_length=200)
+    option_b = models.CharField(max_length=200)
+    option_c = models.CharField(max_length=200)
+    option_d = models.CharField(max_length=200)
+    correct_option = models.CharField(
+        max_length=1,
+        choices=[('A', 'Option A'), ('B', 'Option B'), ('C', 'Option C'), ('D', 'Option D')]
+    )
+
+    def __str__(self):
+        return f"Q: {self.question_text[:50]}..."
+
+
+class ExamSubmission(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='submissions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='exam_submissions')
+    answers_json = models.JSONField(default=dict)
+    score = models.PositiveIntegerField(default=0)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['user', 'exam']]
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.exam.title} (Score: {self.score})"

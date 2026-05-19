@@ -46,3 +46,150 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'completed_count': LessonProgress.objects.filter(user=user, completed=True).count(),
         })
         return ctx
+
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+from courses.models import Assignment, AssignmentSubmission, Exam, ExamQuestion, ExamSubmission
+from analytics.models import UserActivity
+
+
+@login_required
+def assignments_list_view(request):
+    """Lists assignments associated with courses in which the student is enrolled."""
+    enrolled_courses = Course.objects.filter(enrollments__user=request.user, is_published=True)
+    assignments = Assignment.objects.filter(course__in=enrolled_courses).select_related('course').order_by('due_date')
+    
+    # Check submissions
+    submissions = AssignmentSubmission.objects.filter(user=request.user)
+    submissions_dict = {sub.assignment_id: sub for sub in submissions}
+    
+    for a in assignments:
+        a.submission = submissions_dict.get(a.id)
+        
+    return render(request, 'dashboard/assignments.html', {
+        'assignments': assignments,
+    })
+
+
+@login_required
+def exams_list_view(request):
+    """Lists all timed MCQ certificate exams for enrolled courses."""
+    enrolled_courses = Course.objects.filter(enrollments__user=request.user, is_published=True)
+    exams = Exam.objects.filter(course__in=enrolled_courses, is_active=True).select_related('course').order_by('-created_at')
+    
+    # Check submissions
+    submissions = ExamSubmission.objects.filter(user=request.user)
+    submissions_dict = {sub.exam_id: sub for sub in submissions}
+    
+    for e in exams:
+        e.submission = submissions_dict.get(e.id)
+        
+    return render(request, 'dashboard/exams.html', {
+        'exams': exams,
+    })
+
+
+@login_required
+def take_exam_view(request, exam_id):
+    """Loads a timed MCQ exam interface with radio selection questions."""
+    exam = get_object_or_404(Exam, id=exam_id, is_active=True)
+    
+    # Pre-check: if they already completed it, redirect them to safety
+    submission = ExamSubmission.objects.filter(user=request.user, exam=exam).first()
+    if submission:
+        messages.info(request, "You have already completed this exam.")
+        return redirect('dashboard:exams')
+        
+    questions = exam.questions.all().order_by('id')
+    return render(request, 'dashboard/take_exam.html', {
+        'exam': exam,
+        'questions': questions,
+    })
+
+
+@login_required
+@require_POST
+def submit_exam_ajax(request, exam_id):
+    """AJAX handler to grade ticking MCQ exam responses on-the-fly and award XP."""
+    exam = get_object_or_404(Exam, id=exam_id, is_active=True)
+    
+    # Double submit block
+    if ExamSubmission.objects.filter(user=request.user, exam=exam).exists():
+        return JsonResponse({'success': False, 'error': 'Exam has already been submitted.'}, status=400)
+        
+    questions = exam.questions.all()
+    if not questions.exists():
+        return JsonResponse({'success': False, 'error': 'This exam has no questions defined.'}, status=400)
+        
+    correct_count = 0
+    total_questions = questions.count()
+    answers_json = {}
+    
+    for q in questions:
+        # Extract selected option (A, B, C, D)
+        selected = request.POST.get(f'question_{q.id}', '').strip().upper()
+        answers_json[str(q.id)] = selected
+        
+        if selected == q.correct_option.upper():
+            correct_count += 1
+            
+    # Calculate score out of 100
+    score = int((correct_count / total_questions) * 100)
+    
+    # Create the submission record
+    ExamSubmission.objects.create(
+        user=request.user,
+        exam=exam,
+        answers_json=answers_json,
+        score=score,
+        completed_at=timezone.now()
+    )
+    
+    # Reward XP (+200 XP)
+    xp_reward = 200
+    profile = request.user.profile
+    profile.xp += xp_reward
+    level_up = False
+    
+    while profile.xp >= profile.xp_to_next_level:
+        profile.xp -= profile.xp_to_next_level
+        profile.level += 1
+        level_up = True
+        
+    profile.save()
+    
+    # Log activity
+    UserActivity.objects.create(
+        user=request.user,
+        activity_type=UserActivity.ActivityType.LESSON_COMPLETE,
+        metadata={
+            'exam': exam.title,
+            'score': score,
+            'xp': xp_reward
+        }
+    )
+    
+    is_arabic = request.COOKIES.get('nexus_lang') == 'ar'
+    Notification.objects.create(
+        user=request.user,
+        title='شهادة مكتملة / Exam Certified' if is_arabic else 'Exam Certified',
+        message=f'لقد أكملت اختبار {exam.title} بنجاح وحصلت على {score}%!' if is_arabic else f'Successfully completed {exam.title} with a score of {score}%!',
+        notification_type=Notification.NotificationType.SUCCESS,
+        link='/dashboard/exams/'
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'score': score,
+        'correct_count': correct_count,
+        'total_questions': total_questions,
+        'xp': profile.xp,
+        'level': profile.level,
+        'level_up': level_up,
+        'xp_reward': xp_reward
+    })

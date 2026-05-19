@@ -31,10 +31,25 @@
       <span class="text-ar">لوحة التحكم</span>
       <span class="text-en">Dashboard</span>
     </a>
-    <a href="{% url 'courses:list' %}" class="nav-item {% if request.resolver_match.namespace == 'courses' %}active{% endif %}">
+    <a href="{% url 'courses:list' %}" class="nav-item {% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'courses' %}active{% endif %}">
       <span class="material-symbols-outlined nav-icon">terminal</span>
       <span class="text-ar">الكورسات</span>
       <span class="text-en">Courses</span>
+    </a>
+    <a href="{% url 'courses:playground' %}" class="nav-item {% if request.resolver_match.url_name == 'playground' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">code</span>
+      <span class="text-ar">بيئة البرمجة الذكية</span>
+      <span class="text-en">Code Playground</span>
+    </a>
+    <a href="{% url 'dashboard:assignments' %}" class="nav-item {% if request.resolver_match.url_name == 'assignments' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">task</span>
+      <span class="text-ar">الواجبات والمهام</span>
+      <span class="text-en">Assignments</span>
+    </a>
+    <a href="{% url 'dashboard:exams' %}" class="nav-item {% if request.resolver_match.url_name == 'exams' or request.resolver_match.url_name == 'take_exam' %}active{% endif %}">
+      <span class="material-symbols-outlined nav-icon">workspace_premium</span>
+      <span class="text-ar">الاختبارات والشهادات</span>
+      <span class="text-en">Exams & Certs</span>
     </a>
     <a href="{% url 'ai_assistant:chat' %}" class="nav-item {% if request.resolver_match.namespace == 'ai_assistant' %}active{% endif %}">
       <span class="material-symbols-outlined nav-icon">smart_toy</span>

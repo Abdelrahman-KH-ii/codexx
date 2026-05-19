@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Course, Enrollment, Lesson, LessonProgress, Module
+from .models import Course, Enrollment, Lesson, LessonProgress, Module, Assignment, AssignmentSubmission, Exam, ExamQuestion, ExamSubmission
 
 
 class ModuleInline(admin.TabularInline):
@@ -42,3 +42,28 @@ class EnrollmentAdmin(admin.ModelAdmin):
 @admin.register(LessonProgress)
 class LessonProgressAdmin(admin.ModelAdmin):
     list_display = ('user', 'lesson', 'completed', 'score')
+
+
+@admin.register(Assignment)
+class AssignmentAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'points', 'due_date')
+
+
+@admin.register(AssignmentSubmission)
+class AssignmentSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'assignment', 'language', 'score', 'submitted_at')
+
+
+@admin.register(Exam)
+class ExamAdmin(admin.ModelAdmin):
+    list_display = ('title', 'course', 'duration_minutes', 'points', 'is_active')
+
+
+@admin.register(ExamQuestion)
+class ExamQuestionAdmin(admin.ModelAdmin):
+    list_display = ('exam', 'question_text', 'correct_option')
+
+
+@admin.register(ExamSubmission)
+class ExamSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'exam', 'score', 'completed_at')

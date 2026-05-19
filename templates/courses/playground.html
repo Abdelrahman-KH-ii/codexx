@@ -1,0 +1,210 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}
+  <span class="text-ar">بيئة البرمجة الذكية</span>
+  <span class="text-en">Smart Code Playground</span>
+{% endblock %}
+
+{% block page_title %}
+  <span class="text-ar">بيئة البرمجة الذكية</span>
+  <span class="text-en">Code Playground Workspace</span>
+{% endblock %}
+
+{% block content %}
+<div class="playground-layout-wrapper">
+  
+  <!-- Introductory Banner -->
+  <div class="glass-card welcome-mini-card mb-4" data-animate-card>
+    <div class="welcome-card-content">
+      <h2>
+        <span class="text-ar">أهلاً بك في بيئة البرمجة المتكاملة 🚀</span>
+        <span class="text-en">Welcome to the LMS Code Workspace! 🚀</span>
+      </h2>
+      <p class="text-muted">
+        <span class="text-ar">اختر لغة البرمجة المفضلة لديك، اكتب الأكواد البرمجية، اختبر الحلول مباشرة، أو قم بربط وتأدية الواجبات والمهام الدراسية وحصد نقاط الـ XP فوراً.</span>
+        <span class="text-en">Select your language, execute test simulations, download files directly, or link your solutions to active LMS assignments to claim your XP rewards.</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- React Mount Point -->
+  <div id="universal-editor-mount"
+       class="react-mount"
+       data-active-lang="{{ active_lang }}"
+       data-assignments='[
+         {% for a in assignments %}
+           {
+             "id": {{ a.id }},
+             "title": "{{ a.title|escapejs }}",
+             "course_title": "{{ a.course.title|escapejs }}"
+           }{% if not forloop.last %},{% endif %}
+         {% endfor %}
+       ]'>
+  </div>
+
+</div>
+
+<style>
+  /* Cyber-Modern Workspace Stylings */
+  .editor-playground-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 100%;
+    margin-top: 1rem;
+  }
+
+  .editor-control-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem 2rem;
+    border-radius: 1.25rem;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .control-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .control-item label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .glass-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+    border-radius: 0.5rem;
+    padding: 0.4rem 1rem !important;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+  }
+
+  .glass-input:focus {
+    border-color: var(--color-primary, #06b6d4) !important;
+    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+  }
+
+  .assignment-picker {
+    margin-inline-start: auto;
+  }
+
+  .submit-assignment-btn {
+    background: linear-gradient(135deg, #06b6d4, #3b82f6) !important;
+    border: none !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.3) !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .submit-assignment-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.5) !important;
+  }
+
+  .editor-workspace {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 1.5rem;
+    min-height: 520px;
+  }
+
+  @media (max-width: 1024px) {
+    .editor-workspace {
+      grid-template-columns: 1fr;
+    }
+    .assignment-picker {
+      margin-inline-start: 0;
+    }
+  }
+
+  .pane-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #f8fafc;
+  }
+
+  .editor-pane {
+    display: flex;
+    flex-direction: column;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .code-editor-textarea {
+    flex-grow: 1;
+    background: rgba(10, 15, 30, 0.7);
+    color: #38bdf8;
+    font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    padding: 1.5rem;
+    border: none;
+    resize: none;
+    outline: none;
+    line-height: 1.6;
+    tab-size: 4;
+    min-height: 400px;
+  }
+
+  .console-pane {
+    display: flex;
+    flex-direction: column;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .playground-output {
+    flex-grow: 1;
+    background: rgba(8, 10, 18, 0.85);
+    color: #10b981;
+    font-family: 'Fira Code', monospace;
+    padding: 1.5rem;
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    min-height: 400px;
+  }
+
+  /* RTL tweaks */
+  html[dir="rtl"] .assignment-picker {
+    margin-inline-start: auto;
+    margin-inline-end: 0;
+  }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="{% static 'js/react/universal-editor.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var mountPoint = document.getElementById('universal-editor-mount');
+    if (mountPoint) {
+      NexusUniversalEditor.mount(mountPoint);
+    }
+  });
+</script>
+{% endblock %}
