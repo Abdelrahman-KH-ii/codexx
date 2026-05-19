@@ -130,16 +130,18 @@
   </nav>
   <div class="sidebar-footer">
   {% if user_profile %}
-    <div class="sidebar-user">
-      <div class="user-avatar">{{ user.email|first|upper }}</div>
-      <div class="user-meta">
-        <span class="user-name">{{ user.username }}</span>
-        <span class="user-level">
-          <span class="text-ar">مطور أول · L{{ user_profile.level }}</span>
-          <span class="text-en">Senior Dev · L{{ user_profile.level }}</span>
-        </span>
+    <a href="{% url 'accounts:profile' %}" class="sidebar-user-link" style="text-decoration: none; display: block; width: 100%;">
+      <div class="sidebar-user" style="transition: background 0.25s ease; border-radius: 12px; padding: 8px;">
+        <div class="user-avatar">{{ user.email|first|upper }}</div>
+        <div class="user-meta">
+          <span class="user-name">{{ user.username }}</span>
+          <span class="user-level">
+            <span class="text-ar">مطور أول · L{{ user_profile.level }}</span>
+            <span class="text-en">Senior Dev · L{{ user_profile.level }}</span>
+          </span>
+        </div>
       </div>
-    </div>
+    </a>
   {% endif %}
     <a href="{% url 'accounts:profile' %}" class="nav-item">
       <span class="material-symbols-outlined nav-icon">person</span>
@@ -153,3 +155,10 @@
     </a>
   </div>
 </aside>
+
+<style>
+.sidebar-user-link:hover .sidebar-user {
+  background: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.03);
+}
+</style>
