@@ -11,6 +11,11 @@ from .models import FeaturedTip
 class HomeView(TemplateView):
     template_name = 'pages/home.html'
 
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('dashboard:switch_role')
+        return super().get(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['featured_courses'] = Course.objects.filter(is_published=True)[:3]
@@ -192,4 +197,36 @@ def submit_exam_ajax(request, exam_id):
         'level': profile.level,
         'level_up': level_up,
         'xp_reward': xp_reward
+    })
+
+
+@login_required
+def switch_role(request):
+    courses = Course.objects.all().order_by('title')
+    
+    if request.method == 'POST':
+        role = request.POST.get('role')
+        if role == 'instructor':
+            course_id = request.POST.get('course_id')
+            if not course_id:
+                messages.error(request, 'Please select the course you teach.')
+                return redirect('dashboard:switch_role')
+            
+            request.session['role'] = 'instructor'
+            request.session['instructor_course_id'] = course_id
+            messages.success(request, 'Successfully switched to Instructor Mode!')
+            return redirect(f'/courses/manage/?course_id={course_id}')
+        else:
+            request.session['role'] = 'student'
+            request.session.pop('instructor_course_id', None)
+            messages.success(request, 'Successfully switched to Student Mode!')
+            return redirect('/dashboard/')
+            
+    current_role = request.session.get('role', 'student')
+    current_course_id = request.session.get('instructor_course_id')
+    
+    return render(request, 'dashboard/role_switch.html', {
+        'courses': courses,
+        'current_role': current_role,
+        'current_course_id': current_course_id,
     })

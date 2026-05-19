@@ -6,6 +6,7 @@ app_name = 'dashboard'
 
 urlpatterns = [
     path('', views.DashboardView.as_view(), name='index'),
+    path('switch-role/', views.switch_role, name='switch_role'),
     path('assignments/', views.assignments_list_view, name='assignments'),
     path('exams/', views.exams_list_view, name='exams'),
     path('exams/<int:exam_id>/take/', views.take_exam_view, name='take_exam'),

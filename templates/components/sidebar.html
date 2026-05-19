@@ -26,55 +26,106 @@
     {% endif %}
   </div>
   <nav class="sidebar-nav">
-    <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">dashboard</span>
-      <span class="text-ar">لوحة التحكم</span>
-      <span class="text-en">Dashboard</span>
+    <!-- Role Switch Button always available at top of nav for logged-in users -->
+    <a href="{% url 'dashboard:switch_role' %}" class="nav-item {% if request.resolver_match.url_name == 'switch_role' %}active{% endif %}" style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); margin-bottom: 0.75rem;">
+      <span class="material-symbols-outlined nav-icon" style="color: #c084fc;">swap_horiz</span>
+      <span class="text-ar" style="color: #c084fc; font-weight: 700;">تبديل دور المستخدم</span>
+      <span class="text-en" style="color: #c084fc; font-weight: 700;">Switch User Role</span>
     </a>
-    <a href="{% url 'courses:list' %}" class="nav-item {% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'courses' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">terminal</span>
-      <span class="text-ar">الكورسات</span>
-      <span class="text-en">Courses</span>
-    </a>
-    <a href="{% url 'courses:playground' %}" class="nav-item {% if request.resolver_match.url_name == 'playground' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">code</span>
-      <span class="text-ar">بيئة البرمجة الذكية</span>
-      <span class="text-en">Code Playground</span>
-    </a>
-    <a href="{% url 'dashboard:assignments' %}" class="nav-item {% if request.resolver_match.url_name == 'assignments' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">task</span>
-      <span class="text-ar">الواجبات والمهام</span>
-      <span class="text-en">Assignments</span>
-    </a>
-    <a href="{% url 'dashboard:exams' %}" class="nav-item {% if request.resolver_match.url_name == 'exams' or request.resolver_match.url_name == 'take_exam' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">workspace_premium</span>
-      <span class="text-ar">الاختبارات والشهادات</span>
-      <span class="text-en">Exams & Certs</span>
-    </a>
-    <a href="{% url 'ai_assistant:chat' %}" class="nav-item {% if request.resolver_match.namespace == 'ai_assistant' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">smart_toy</span>
-      <span class="text-ar">المساعد الذكي</span>
-      <span class="text-en">AI Assistant</span>
-    </a>
-    <a href="{% url 'analytics:index' %}" class="nav-item {% if request.resolver_match.namespace == 'analytics' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">monitoring</span>
-      <span class="text-ar">التحليلات</span>
-      <span class="text-en">Analytics</span>
-    </a>
-    <a href="{% url 'notifications:list' %}" class="nav-item {% if request.resolver_match.namespace == 'notifications' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">notifications</span>
-      <span class="text-ar">الإشعارات</span>
-      <span class="text-en">Notifications</span>
-      {% if unread_notification_count %}
-      <span class="nav-badge">{{ unread_notification_count }}</span>
+
+    {% if request.session.role == 'instructor' %}
+      <!-- Instructor Mode Navigation Layout -->
+      <div class="sidebar-section-header" style="padding: 0.5rem 1rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: #a78bfa; font-weight: 700;">
+        <span class="text-ar">أدوات المعلم والمشرف</span>
+        <span class="text-en">Instructor Operations</span>
+      </div>
+      
+      <a href="/courses/manage/?course_id={{ request.session.instructor_course_id }}" class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' and not request.GET.active_tab_state %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">developer_board</span>
+        <span class="text-ar">لوحة تحكم المعلم</span>
+        <span class="text-en">Instructor Panel</span>
+      </a>
+      
+      <a href="/courses/manage/?active_tab_state=attendance&course_id={{ request.session.instructor_course_id }}" class="nav-item {% if request.GET.active_tab_state == 'attendance' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">how_to_reg</span>
+        <span class="text-ar">الحضور والغياب اليومي</span>
+        <span class="text-en">Daily Attendance</span>
+      </a>
+      
+      <a href="/courses/manage/?active_tab_state=assignments&course_id={{ request.session.instructor_course_id }}" class="nav-item {% if request.GET.active_tab_state == 'assignments' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">add_task</span>
+        <span class="text-ar">نشر وإدارة الواجبات</span>
+        <span class="text-en">Publish Assignments</span>
+      </a>
+
+      <!-- Analytics and Notifications still useful for Instructor -->
+      <a href="{% url 'analytics:index' %}" class="nav-item {% if request.resolver_match.namespace == 'analytics' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">monitoring</span>
+        <span class="text-ar">تحليلات المنصة</span>
+        <span class="text-en">Analytics</span>
+      </a>
+      
+      <a href="{% url 'notifications:list' %}" class="nav-item {% if request.resolver_match.namespace == 'notifications' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">notifications</span>
+        <span class="text-ar">الإشعارات</span>
+        <span class="text-en">Notifications</span>
+        {% if unread_notification_count %}
+        <span class="nav-badge">{{ unread_notification_count }}</span>
+        {% endif %}
+      </a>
+      
+    {% else %}
+      <!-- Student Mode Navigation Layout -->
+      <a href="{% url 'dashboard:index' %}" class="nav-item {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'dashboard' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">dashboard</span>
+        <span class="text-ar">لوحة التحكم</span>
+        <span class="text-en">Dashboard</span>
+      </a>
+      <a href="{% url 'courses:list' %}" class="nav-item {% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'courses' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">terminal</span>
+        <span class="text-ar">الكورسات</span>
+        <span class="text-en">Courses</span>
+      </a>
+      <a href="{% url 'courses:playground' %}" class="nav-item {% if request.resolver_match.url_name == 'playground' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">code</span>
+        <span class="text-ar">بيئة البرمجة الذكية</span>
+        <span class="text-en">Code Playground</span>
+      </a>
+      <a href="{% url 'dashboard:assignments' %}" class="nav-item {% if request.resolver_match.url_name == 'assignments' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">task</span>
+        <span class="text-ar">الواجبات والمهام</span>
+        <span class="text-en">Assignments</span>
+      </a>
+      <a href="{% url 'dashboard:exams' %}" class="nav-item {% if request.resolver_match.url_name == 'exams' or request.resolver_match.url_name == 'take_exam' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">workspace_premium</span>
+        <span class="text-ar">الاختبارات والشهادات</span>
+        <span class="text-en">Exams & Certs</span>
+      </a>
+      <a href="{% url 'ai_assistant:chat' %}" class="nav-item {% if request.resolver_match.namespace == 'ai_assistant' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">smart_toy</span>
+        <span class="text-ar">المساعد الذكي</span>
+        <span class="text-en">AI Assistant</span>
+      </a>
+      <a href="{% url 'analytics:index' %}" class="nav-item {% if request.resolver_match.namespace == 'analytics' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">monitoring</span>
+        <span class="text-ar">التحليلات</span>
+        <span class="text-en">Analytics</span>
+      </a>
+      <a href="{% url 'notifications:list' %}" class="nav-item {% if request.resolver_match.namespace == 'notifications' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">notifications</span>
+        <span class="text-ar">الإشعارات</span>
+        <span class="text-en">Notifications</span>
+        {% if unread_notification_count %}
+        <span class="nav-badge">{{ unread_notification_count }}</span>
+        {% endif %}
+      </a>
+      {% if user.is_staff %}
+      <a href="{% url 'courses:admin_dashboard' %}" class="nav-item nav-admin {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+        <span class="material-symbols-outlined nav-icon">admin_panel_settings</span>
+        <span class="text-ar">لوحة الإدارة</span>
+        <span class="text-en">Admin Panel</span>
+      </a>
       {% endif %}
-    </a>
-    {% if user.is_staff %}
-    <a href="{% url 'courses:admin_dashboard' %}" class="nav-item nav-admin {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-      <span class="material-symbols-outlined nav-icon">admin_panel_settings</span>
-      <span class="text-ar">لوحة الإدارة</span>
-      <span class="text-en">Admin Panel</span>
-    </a>
     {% endif %}
   </nav>
   <div class="sidebar-footer">

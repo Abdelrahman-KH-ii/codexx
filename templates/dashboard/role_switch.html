@@ -1,0 +1,239 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block title %}
+  <span class="text-ar">تبديل دور المستخدم</span>
+  <span class="text-en">Role Selection Portal</span>
+{% endblock %}
+
+{% block page_title %}
+  <span class="text-ar">بوابة تبديل الأدوار الرقمية</span>
+  <span class="text-en">Interactive Role Switcher</span>
+{% endblock %}
+
+{% block content %}
+<div class="role-selector-wrapper">
+  
+  <div class="glass-card welcome-mini-card mb-4" style="border-left: 3px solid #8b5cf6;">
+    <div class="welcome-card-content">
+      <h2>
+        <span class="text-ar">اختر دورك التعليمي اليوم</span>
+        <span class="text-en">Choose Your Learning Pathway Today</span>
+      </h2>
+      <p class="text-muted">
+        <span class="text-ar">قم بتبديل واجهة التطبيق بناءً على دورك الحالي. تجربة طالب تفاعلية بالكامل مقابل لوحة تحكم معلم ذكية لإدارة المساقات وحضور الطلاب.</span>
+        <span class="text-en">Toggle your active workspace interface. Engage in student learning loops or access premium instructor panels for attendance and assignment control.</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="roles-grid">
+    <!-- Student Role Card -->
+    <div class="glass-card role-card {% if current_role == 'student' %}active-role{% endif %}" onclick="selectRole('student')">
+      <div class="role-icon-wrap bg-student">
+        <span class="material-symbols-outlined role-icon">school</span>
+      </div>
+      
+      <div class="role-content mt-3">
+        <h3>
+          <span class="text-ar">طالب العلم والمطور</span>
+          <span class="text-en">Student & Coder Mode</span>
+        </h3>
+        <p class="text-muted mt-2">
+          <span class="text-ar">اكتشف المناهج البرمجية المتقدمة، تفاعل مع المساعد الذكي، قم بحل التحديات في بيئة البرمجة، واجتز الامتحانات للحصول على شهادات معتمدة.</span>
+          <span class="text-en">Browse cutting-edge tracks, submit automated solutions in the playground, interact with AI assistant, and pass timed MCQs for verified certifications.</span>
+        </p>
+      </div>
+
+      <div class="role-status-badge mt-3">
+        {% if current_role == 'student' %}
+          <span class="badge badge-success">
+            <span class="text-ar">الدور النشط حالياً</span>
+            <span class="text-en">Currently Active Role</span>
+          </span>
+        {% else %}
+          <span class="badge badge-pending">
+            <span class="text-ar">خامل</span>
+            <span class="text-en">Inactive</span>
+          </span>
+        {% endif %}
+      </div>
+
+      <form method="post" action="{% url 'dashboard:switch_role' %}" id="form-student" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="role" value="student">
+      </form>
+
+      <button class="btn btn-ghost btn-sm mt-4 btn-block py-2 action-btn" onclick="submitRoleForm('student', event)">
+        <span class="text-ar">تنشيط واجهة الطالب</span>
+        <span class="text-en">Activate Student Interface</span>
+      </button>
+    </div>
+
+    <!-- Instructor Role Card -->
+    <div class="glass-card role-card {% if current_role == 'instructor' %}active-role-instructor{% endif %}" onclick="selectRole('instructor')">
+      <div class="role-icon-wrap bg-instructor">
+        <span class="material-symbols-outlined role-icon">psychology</span>
+      </div>
+      
+      <div class="role-content mt-3">
+        <h3>
+          <span class="text-ar">مدرس وموجه المساق</span>
+          <span class="text-en">Course Instructor Mode</span>
+        </h3>
+        <p class="text-muted mt-2">
+          <span class="text-ar">تحكم بالكامل بالطلاب المشتركين، أضف فصول ودروس جديدة، خذ الحضور والغياب اليومي للطلاب، وانشر واجبات برمجية تفاعلية جديدة.</span>
+          <span class="text-en">Gain direct access to class registry, append lessons, take daily presence sheets, download submissions, and publish homework challenges.</span>
+        </p>
+      </div>
+
+      <form method="post" action="{% url 'dashboard:switch_role' %}" id="form-instructor" class="instructor-selection-form mt-3" onclick="event.stopPropagation()">
+        {% csrf_token %}
+        <input type="hidden" name="role" value="instructor">
+        
+        <div class="form-group text-left">
+          <label for="instructor-course" class="small text-muted mb-2">
+            <span class="text-ar">اختر الكورس الذي تدرسه حالياً للولوج إليه:</span>
+            <span class="text-en">Select The Course You Teach:</span>
+          </label>
+          <select name="course_id" id="instructor-course" class="glass-input select-field" required style="width: 100%; border: 1px solid rgba(139, 92, 246, 0.25);">
+            {% for c in courses %}
+              <option value="{{ c.id }}" {% if current_course_id == c.id %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-sm mt-3 btn-block py-2 action-btn-instructor">
+          <span class="text-ar">تنشيط ولوحة التحكم للمعلم</span>
+          <span class="text-en">Launch Instructor Panel</span>
+        </button>
+      </form>
+
+      <div class="role-status-badge mt-3">
+        {% if current_role == 'instructor' %}
+          <span class="badge badge-success" style="background: rgba(139, 92, 246, 0.15); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.25);">
+            <span class="text-ar">نشط: مدرس مساق</span>
+            <span class="text-en">Active: Teaching Course</span>
+          </span>
+        {% else %}
+          <span class="badge badge-pending">
+            <span class="text-ar">خامل</span>
+            <span class="text-en">Inactive</span>
+          </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.roles-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .roles-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  padding: 2.5rem;
+  border-radius: 1.75rem;
+  background: rgba(15, 23, 42, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+/* Active Roles Borders and Shadows */
+.active-role {
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  background: rgba(16, 185, 129, 0.02) !important;
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.08);
+}
+
+.active-role-instructor {
+  border-color: rgba(139, 92, 246, 0.4) !important;
+  background: rgba(139, 92, 246, 0.02) !important;
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.08);
+}
+
+.role-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-icon {
+  font-size: 32px;
+}
+
+.bg-student {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.bg-instructor {
+  background: rgba(139, 92, 246, 0.1);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.action-btn-instructor {
+  background: linear-gradient(135deg, #8b5cf6, #ec4899) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.25) !important;
+  transition: all 0.25s ease !important;
+}
+
+.action-btn-instructor:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.4) !important;
+}
+
+.role-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.role-card p {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+</style>
+
+<script>
+function selectRole(role) {
+  if (role === 'student') {
+    document.getElementById('form-student').submit();
+  }
+}
+
+function submitRoleForm(role, event) {
+  event.stopPropagation();
+  document.getElementById('form-student').submit();
+}
+</script>
+{% endblock %}
