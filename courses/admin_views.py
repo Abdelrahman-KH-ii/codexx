@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .forms import CourseForm, LessonForm, ModuleForm
-from .models import Course, Lesson, Module, Enrollment
+from .models import Course, Lesson, Module, Enrollment, Assignment, Attendance
 
 User = get_user_model()
 
@@ -39,6 +39,31 @@ def admin_dashboard(request):
     if student_q:
         students = students.filter(email__icontains=student_q)
         
+    # Fetch all assignments
+    assignments = Assignment.objects.all().select_related('course').order_by('-created_at')
+    
+    # Attendance Logic
+    attendance_course_id = request.GET.get('course_id') or (courses[0].id if courses.exists() else None)
+    attendance_students = []
+    attendance_records = {}
+    selected_attendance_course = None
+    
+    import datetime
+    today = datetime.date.today()
+    
+    if attendance_course_id:
+        selected_attendance_course = get_object_or_404(Course, id=attendance_course_id)
+        enrolls = Enrollment.objects.filter(course=selected_attendance_course).select_related('user')
+        attendance_students = [en.user for en in enrolls]
+        
+        # Load today's records
+        records = Attendance.objects.filter(course=selected_attendance_course, date=today)
+        for r in records:
+            attendance_records[r.student_id] = {
+                'is_present': r.is_present,
+                'notes': r.notes
+            }
+        
     return render(request, 'courses/admin/dashboard.html', {
         'courses': courses,
         'stats': stats,
@@ -47,6 +72,11 @@ def admin_dashboard(request):
         'categories': Course.Category.choices,
         'stacks': Course.Stack.choices,
         'student_q': student_q,
+        'assignments': assignments,
+        'attendance_students': attendance_students,
+        'attendance_records': attendance_records,
+        'selected_attendance_course': selected_attendance_course,
+        'today': today,
     })
 
 
@@ -186,3 +216,52 @@ def admin_course_toggle_publish(request, slug):
     status = 'published' if course.is_published else 'unpublished'
     messages.success(request, f'Course {status}.')
     return redirect('courses:admin_dashboard')
+
+
+@staff_member_required
+@require_POST
+def admin_attendance_save(request):
+    course_id = request.POST.get('course_id')
+    course = get_object_or_404(Course, id=course_id)
+    
+    import datetime
+    today = datetime.date.today()
+    
+    enrollments = Enrollment.objects.filter(course=course).select_related('user')
+    for e in enrollments:
+        status = request.POST.get(f'attendance_{e.user.id}')
+        notes = request.POST.get(f'notes_{e.user.id}', '').strip()
+        is_present = (status == 'present')
+        
+        Attendance.objects.update_or_create(
+            student=e.user,
+            course=course,
+            date=today,
+            defaults={'is_present': is_present, 'notes': notes}
+        )
+        
+    messages.success(request, f'Attendance successfully updated for "{course.title}" today!')
+    return redirect(f'/courses/manage/?active_tab_state=attendance&course_id={course_id}')
+
+
+@staff_member_required
+@require_POST
+def admin_assignment_add(request):
+    course_id = request.POST.get('course_id')
+    title = request.POST.get('title')
+    description = request.POST.get('description')
+    points = request.POST.get('points', 100)
+    due_date = request.POST.get('due_date')
+    
+    course = get_object_or_404(Course, id=course_id)
+    
+    Assignment.objects.create(
+        course=course,
+        title=title,
+        description=description,
+        points=points,
+        due_date=due_date
+    )
+    
+    messages.success(request, f'New assignment "{title}" successfully added to course "{course.title}"!')
+    return redirect('/courses/manage/?active_tab_state=assignments')

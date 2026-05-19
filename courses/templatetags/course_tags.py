@@ -42,3 +42,10 @@ def translate_difficulty(course, lang):
     if lang == 'ar':
         return DIFFICULTIES_AR.get(course.difficulty, course.get_difficulty_display())
     return course.get_difficulty_display()
+
+
+@register.filter
+def dict_get(dictionary, key):
+    if not isinstance(dictionary, dict):
+        return None
+    return dictionary.get(key)

@@ -247,3 +247,18 @@ class ExamSubmission(models.Model):
 
     def __str__(self):
         return f"{self.user.email} -> {self.exam.title} (Score: {self.score})"
+
+
+class Attendance(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='attendances')
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='attendances')
+    date = models.DateField(auto_now_add=True)
+    is_present = models.BooleanField(default=True)
+    notes = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        unique_together = [['student', 'course', 'date']]
+
+    def __str__(self):
+        status = "Present" if self.is_present else "Absent"
+        return f"{self.student.email} - {self.course.title} - {self.date} ({status})"

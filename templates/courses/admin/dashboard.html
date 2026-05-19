@@ -1,4 +1,5 @@
 {% extends "base_dashboard.html" %}
+{% load course_tags %}
 
 {% block title %}Admin — Courses & Student Control{% endblock %}
 {% block page_title %}Course Admin Control Center{% endblock %}
@@ -60,11 +61,23 @@
 <div class="admin-tabs-nav glass-card">
   <button class="tab-btn active" data-tab="courses">
     <span class="material-symbols-outlined">menu_book</span>
-    Courses Management
+    <span class="text-ar">إدارة الكورسات</span>
+    <span class="text-en">Courses Management</span>
   </button>
   <button class="tab-btn" data-tab="students">
     <span class="material-symbols-outlined">school</span>
-    Students & Subscriptions Center
+    <span class="text-ar">إدارة الطلاب والاشتراكات</span>
+    <span class="text-en">Students & Enrollments</span>
+  </button>
+  <button class="tab-btn" data-tab="attendance">
+    <span class="material-symbols-outlined">how_to_reg</span>
+    <span class="text-ar">الحضور والغياب اليومي</span>
+    <span class="text-en">Daily Attendance Registry</span>
+  </button>
+  <button class="tab-btn" data-tab="assignments">
+    <span class="material-symbols-outlined">add_task</span>
+    <span class="text-ar">إضافة وإدارة الواجبات</span>
+    <span class="text-en">Publish Assignments</span>
   </button>
 </div>
 
@@ -240,6 +253,195 @@
           </tr>
           {% empty %}
           <tr><td colspan="4" class="text-muted text-center">No students match the search filter.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab Content: Daily Attendance Registry -->
+<div id="tab-attendance" class="tab-content">
+  <div class="glass-card attendance-card mb-4">
+    <h3 class="widget-title">
+      <span class="material-symbols-outlined widget-icon">how_to_reg</span>
+      <span class="text-ar">إدارة الحضور والغياب اليومي (تاريخ اليوم: {{ today|date:"Y-m-d" }})</span>
+      <span class="text-en">Daily Attendance Sheet (Today: {{ today|date:"Y-m-d" }})</span>
+    </h3>
+    
+    <!-- Course Selector Form -->
+    <form method="get" class="attendance-select-form mb-4">
+      <input type="hidden" name="active_tab_state" value="attendance">
+      <div class="enroll-form-grid" style="grid-template-columns: 1fr auto; gap: 1rem; align-items: flex-end;">
+        <div class="form-group" style="width: 100%;">
+          <label for="att-course-select">
+            <span class="text-ar">اختر الكورس النشط:</span>
+            <span class="text-en">Select Active Course:</span>
+          </label>
+          <select name="course_id" id="att-course-select" class="glass-input select-field" onchange="this.form.submit()" style="width: 100%;">
+            {% for c in courses %}
+            <option value="{{ c.id }}" {% if selected_attendance_course.id == c.id %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </form>
+
+    {% if selected_attendance_course %}
+    <form method="post" action="{% url 'courses:admin_attendance_save' %}">
+      {% csrf_token %}
+      <input type="hidden" name="course_id" value="{{ selected_attendance_course.id }}">
+      
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th><span class="text-ar">بيانات الطالب</span><span class="text-en">Student Info</span></th>
+              <th><span class="text-ar">حالة الحضور</span><span class="text-en">Attendance Status</span></th>
+              <th><span class="text-ar">ملاحظات إضافية</span><span class="text-en">Additional Notes</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for student in attendance_students %}
+            {% with record=attendance_records|dict_get:student.id %}
+            <tr class="student-row-item">
+              <td>
+                <div class="student-info-cell">
+                  <span class="student-avatar-placeholder">
+                    {{ student.email|slice:":2"|upper }}
+                  </span>
+                  <div class="student-meta">
+                    <strong>{{ student.email }}</strong>
+                    <small class="text-muted">Username: {{ student.username }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="attendance-radio-group" style="display: flex; gap: 1.5rem; align-items: center;">
+                  <label class="option-label" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; margin: 0; cursor: pointer; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
+                    <input type="radio" name="attendance_{{ student.id }}" value="present" {% if record is None or record.is_present %}checked{% endif %}>
+                    <span class="text-ar">حاضر</span>
+                    <span class="text-en">Present</span>
+                  </label>
+                  <label class="option-label" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; margin: 0; cursor: pointer; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.02);">
+                    <input type="radio" name="attendance_{{ student.id }}" value="absent" {% if record and not record.is_present %}checked{% endif %}>
+                    <span class="text-ar" style="color: #ef4444;">غائب</span>
+                    <span class="text-en" style="color: #ef4444;">Absent</span>
+                  </label>
+                </div>
+              </td>
+              <td>
+                <input type="text" name="notes_{{ student.id }}" value="{{ record.notes|default:'' }}" placeholder="e.g. excused, late 15m..." class="glass-input" style="width: 100%; max-width: 300px; padding: 0.5rem 0.75rem;">
+              </td>
+            </tr>
+            {% endwith %}
+            {% empty %}
+            <tr>
+              <td colspan="3" class="text-muted text-center" style="padding: 2.5rem;">
+                <span class="text-ar">لا يوجد طلاب مسجلين في هذا الكورس حالياً.</span>
+                <span class="text-en">No students enrolled in this course yet.</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      
+      {% if attendance_students %}
+      <div class="form-actions-inline mt-4" style="text-align: right;">
+        <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+          <span class="text-ar">حفظ كشف الحضور والغياب اليومي</span>
+          <span class="text-en">Save Daily Attendance Sheet</span>
+        </button>
+      </div>
+      {% endif %}
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Tab Content: Publish & Manage Course Assignments -->
+<div id="tab-assignments" class="tab-content">
+  <!-- Publish New Assignment Widget -->
+  <div class="glass-card mb-4">
+    <h3 class="widget-title">
+      <span class="material-symbols-outlined widget-icon">add_task</span>
+      <span class="text-ar">نشر واجب دراسي جديد لمقرر برمجي</span>
+      <span class="text-en">Publish New Course Coding Task</span>
+    </h3>
+    
+    <form method="post" action="{% url 'courses:admin_assignment_add' %}">
+      {% csrf_token %}
+      <div class="enroll-form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+        <div class="form-group">
+          <label for="assign-course-select"><span class="text-ar">الكورس المستهدف:</span><span class="text-en">Target Course:</span></label>
+          <select name="course_id" id="assign-course-select" class="glass-input select-field" required style="width: 100%;">
+            {% for c in courses %}
+            <option value="{{ c.id }}">{{ c.title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="assign-title"><span class="text-ar">عنوان الواجب الدراسي:</span><span class="text-en">Assignment Title:</span></label>
+          <input type="text" name="title" id="assign-title" placeholder="e.g. Write Binary Search algorithm" class="glass-input" style="width: 100%; padding: 0.6rem 0.8rem;" required>
+        </div>
+        <div class="form-group">
+          <label for="assign-points"><span class="text-ar">النقاط الممنوحة (XP):</span><span class="text-en">XP Points Reward:</span></label>
+          <input type="number" name="points" id="assign-points" value="100" class="glass-input" style="width: 100%; padding: 0.6rem 0.8rem;" required>
+        </div>
+      </div>
+      <div class="form-group mb-4">
+        <label for="assign-description"><span class="text-ar">الوصف ومتطلبات الحل بالتفصيل:</span><span class="text-en">Detailed Description & Markdown instructions:</span></label>
+        <textarea name="description" id="assign-description" rows="4" placeholder="Describe assignment requirements..." class="glass-input" style="width: 100%; font-family: inherit; padding: 0.8rem; resize: vertical;" required></textarea>
+      </div>
+      <div class="enroll-form-grid" style="grid-template-columns: 1fr auto; gap: 1rem; align-items: flex-end;">
+        <div class="form-group" style="width: 100%;">
+          <label for="assign-due"><span class="text-ar">تاريخ ووقت التسليم النهائي:</span><span class="text-en">Due Date & Time Limit:</span></label>
+          <input type="datetime-local" name="due_date" id="assign-due" class="glass-input" style="width: 100%; padding: 0.6rem 0.8rem;" required>
+        </div>
+        <div class="form-actions-inline">
+          <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+            <span class="text-ar">+ نشر الواجب فوراً</span>
+            <span class="text-en">+ Publish Assignment</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Registry of Created Assignments -->
+  <div class="glass-card">
+    <h3 class="widget-title">
+      <span class="material-symbols-outlined widget-icon">assignment</span>
+      <span class="text-ar">سجل الواجبات والمهام المنشورة</span>
+      <span class="text-en">Published Assignments Register</span>
+    </h3>
+    
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th><span class="text-ar">الكورس المقترن</span><span class="text-en">Course Association</span></th>
+            <th><span class="text-ar">عنوان الواجب</span><span class="text-en">Assignment Title</span></th>
+            <th><span class="text-ar">مكافأة النقاط</span><span class="text-en">Points Reward</span></th>
+            <th><span class="text-ar">تاريخ انتهاء التسليم</span><span class="text-en">Due Date</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for assign in assignments %}
+          <tr class="course-row-item">
+            <td><span class="tag tag-category">{{ assign.course.title }}</span></td>
+            <td><strong>{{ assign.title }}</strong></td>
+            <td><strong class="revenue-val">{{ assign.points }} XP</strong></td>
+            <td><span class="text-muted">{{ assign.due_date|date:"Y-m-d H:i" }}</span></td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="text-muted text-center" style="padding: 2.5rem;">
+              <span class="text-ar">لا توجد واجبات منشورة بعد. استخدم النموذج أعلاه لإضافة واجب.</span>
+              <span class="text-en">No published assignments yet. Use the form above to add one.</span>
+            </td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
