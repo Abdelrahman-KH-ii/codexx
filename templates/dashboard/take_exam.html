@@ -25,7 +25,7 @@
         </p>
       </div>
       <div class="timer-countdown-box">
-        <span class="timer-icon">⏱️</span>
+        <span class="timer-icon"></span>
         <span id="countdown-timer" class="countdown-digit">00:00</span>
       </div>
     </div>
@@ -78,7 +78,7 @@
     <!-- Sticky footer with submit actions -->
     <div class="exam-action-footer mt-4">
       <button type="submit" id="submit-exam-btn" class="btn btn-primary btn-lg submit-exam-btn-glow">
-        ✓ {% if is_ar %}إنهاء وتسليم كراسة الإجابة{% else %}Finish & Submit Exam{% endif %}
+        {% if is_ar %}إنهاء وتسليم كراسة الإجابة{% else %}Finish & Submit Exam{% endif %}
       </button>
     </div>
   </form>
@@ -86,7 +86,7 @@
   <!-- Glowing Results Modal Popup (Initially Hidden) -->
   <div id="exam-results-modal" class="results-modal-overlay" style="display: none;">
     <div class="glass-card results-modal-card">
-      <div class="results-badge-icon">🎓</div>
+      <div class="results-badge-icon"></div>
       
       <h2>
         <span class="text-ar">تم اكتمال وتقييم اختبارك!</span>
@@ -118,7 +118,7 @@
       <div class="card-divider my-4"></div>
 
       <a href="{% url 'dashboard:exams' %}" class="btn btn-primary btn-block py-2">
-        🏠 {% if is_ar %}العودة للوحة التقييمات{% else %}Back to Assessments{% endif %}
+        {% if is_ar %}العودة للوحة التقييمات{% else %}Back to Assessments{% endif %}
       </a>
     </div>
   </div>

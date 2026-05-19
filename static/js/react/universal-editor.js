@@ -75,20 +75,20 @@
         if (lang === 'html') {
           setConsoleOutput(
             isArabic 
-              ? '▶ المحاكاة المباشرة للواجهة:\nتم عرض المعاينة الحية للواجهة بنجاح!\n(مخرجات HTML تظهر بملء الشاشة عند التحميل)'
-              : '▶ Live Layout Preview:\nSuccessfully compiled HTML DOM node!\n(HTML outputs render fullscreen upon load)'
+              ? 'المحاكاة المباشرة للواجهة:\nتم عرض المعاينة الحية للواجهة بنجاح!\n(مخرجات HTML تظهر بملء الشاشة عند التحميل)'
+              : 'Live Layout Preview:\nSuccessfully compiled HTML DOM node!\n(HTML outputs render fullscreen upon load)'
           );
         } else if (lang === 'python' && code.indexOf('def fibonacci') !== -1) {
           setConsoleOutput(
             isArabic 
-              ? '▶ مخرجات التشغيل:\nTest Output: [0, 1, 1, 2, 3]\n─────────────────────\nتم تشغيل كود بايثون واجتياز جميع اختبارات Fibonacci بنجاح!'
-              : '▶ Execution Output:\nTest Output: [0, 1, 1, 2, 3]\n─────────────────────\nPython code executed and successfully passed all Fibonacci unit test assertions!'
+              ? 'مخرجات التشغيل:\nTest Output: [0, 1, 1, 2, 3]\n─────────────────────\nتم تشغيل كود بايثون واجتياز جميع اختبارات Fibonacci بنجاح!'
+              : 'Execution Output:\nTest Output: [0, 1, 1, 2, 3]\n─────────────────────\nPython code executed and successfully passed all Fibonacci unit test assertions!'
           );
         } else {
           setConsoleOutput(
             isArabic 
-              ? '▶ مخرجات التشغيل:\nتم تجميع وتشغيل الكود بنجاح!\nالمخرجات: ترحيب من بيئة DevFlow الافتراضية.'
-              : '▶ Execution Output:\nSuccessfully compiled and executed!\nOutput: Greeted by DevFlow virtual environment.'
+              ? 'مخرجات التشغيل:\nتم تجميع وتشغيل الكود بنجاح!\nالمخرجات: ترحيب من بيئة DevFlow الافتراضية.'
+              : 'Execution Output:\nSuccessfully compiled and executed!\nOutput: Greeted by DevFlow virtual environment.'
           );
         }
       }, 700);
@@ -111,8 +111,8 @@
       
       setConsoleOutput(
         isArabic 
-          ? '📥 تم تنزيل الملف بنجاح كـ (' + filename + ')!'
-          : '📥 Successfully generated and downloaded file (' + filename + ')!'
+          ? 'تم تنزيل الملف بنجاح كـ (' + filename + ')!'
+          : 'Successfully generated and downloaded file (' + filename + ')!'
       );
     }
 
@@ -143,17 +143,17 @@
       .then(function (data) {
         setIsSubmitting(false);
         if (data.success) {
-          setConsoleOutput(data.feedback + '\n\n⭐ XP Earned: +' + data.xp_reward + ' XP (Level ' + data.level + ')');
+          setConsoleOutput(data.feedback + '\n\nXP Earned: +' + data.xp_reward + ' XP (Level ' + data.level + ')');
           if (typeof gsap !== 'undefined') {
             gsap.from('.playground-output', { scale: 0.97, duration: 0.4, ease: 'elastic.out(1, 0.75)' });
           }
         } else {
-          setConsoleOutput('❌ Error: ' + (data.error || 'Submission failed.'));
+          setConsoleOutput('Error: ' + (data.error || 'Submission failed.'));
         }
       })
       .catch(function () {
         setIsSubmitting(false);
-        setConsoleOutput('❌ Connection failed. Could not reach server.');
+        setConsoleOutput('Connection failed. Could not reach server.');
       });
     }
 
@@ -189,7 +189,7 @@
           React.createElement(
             'button',
             { className: 'btn btn-ghost btn-sm', onClick: handleDownloadFile },
-            '📥 ' + (isArabic ? 'تنزيل الكود كملف' : 'Download File')
+            (isArabic ? 'تنزيل الكود كملف' : 'Download File')
           )
         ),
 
@@ -220,7 +220,7 @@
               onClick: handleSubmitAssignment,
               disabled: isSubmitting 
             },
-            isSubmitting ? (isArabic ? 'جاري التسليم...' : 'Submitting...') : (isArabic ? '✓ تقديم الحل النهائي' : '✓ Submit Solution')
+            isSubmitting ? (isArabic ? 'جاري التسليم...' : 'Submitting...') : (isArabic ? 'تقديم الحل النهائي' : 'Submit Solution')
           )
         )
       ),
@@ -237,11 +237,11 @@
           React.createElement(
             'div',
             { className: 'pane-header' },
-            React.createElement('span', null, '💻 ' + (isArabic ? 'محرر الأكواد الذكي' : 'Smart Code Editor')),
+            React.createElement('span', null, (isArabic ? 'محرر الأكواد الذكي' : 'Smart Code Editor')),
             React.createElement(
               'button',
               { className: 'btn btn-accent btn-sm', onClick: handleRunCode },
-              '▶ ' + (isArabic ? 'تشغيل واختبار الكود' : 'Run & Execute')
+              (isArabic ? 'تشغيل واختبار الكود' : 'Run & Execute')
             )
           ),
           React.createElement('textarea', {
@@ -256,7 +256,7 @@
         React.createElement(
           'div',
           { className: 'console-pane glass-card' },
-          React.createElement('div', { className: 'pane-header' }, '🖥️ ' + (isArabic ? 'نافذة المخرجات والتقييم' : 'Evaluation Terminal')),
+          React.createElement('div', { className: 'pane-header' }, (isArabic ? 'نافذة المخرجات والتقييم' : 'Evaluation Terminal')),
           React.createElement('pre', { className: 'playground-output' }, consoleOutput || (isArabic ? 'المخرجات والتقييم الذكي ستظهر هنا بعد تشغيل الكود أو تسليم المهمة.' : 'Simulation outputs and automated grades will appear here.'))
         )
       )

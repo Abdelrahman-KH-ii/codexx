@@ -18,8 +18,8 @@
   <div class="glass-card welcome-mini-card mb-4" data-animate-card>
     <div class="welcome-card-content">
       <h2>
-        <span class="text-ar">مهام الكورسات النشطة 📝</span>
-        <span class="text-en">Your Enrolled Course Tasks 📝</span>
+        <span class="text-ar">مهام الكورسات النشطة</span>
+        <span class="text-en">Your Enrolled Course Tasks</span>
       </h2>
       <p class="text-muted">
         <span class="text-ar">إليك قائمة المهام والواجبات التطبيقية للكورسات التي تدرسها حالياً. اضغط على "حل في بيئة العمل" لفتح محرر الأكواد المتكامل مباشرة!</span>
@@ -39,7 +39,7 @@
             {{ assign.course.title }}
           </span>
           <span class="points-badge">
-            💎 {{ assign.points }} {% if is_ar %}نقطة{% else %}pts{% endif %}
+            {{ assign.points }} {% if is_ar %}نقطة{% else %}pts{% endif %}
           </span>
         </div>
 
@@ -62,17 +62,17 @@
           <!-- Due Date & Status Badge -->
           <div class="status-meta">
             <span class="due-date text-muted">
-              📅 {% if is_ar %}تاريخ التسليم:{% else %}Due Date:{% endif %} {{ assign.due_date|date:"Y-m-d" }}
+              {% if is_ar %}تاريخ التسليم:{% else %}Due Date:{% endif %} {{ assign.due_date|date:"Y-m-d" }}
             </span>
             
             <div class="status-badge-container mt-2">
               {% if assign.submission %}
                 <span class="badge badge-success">
-                  {% if is_ar %}✓ تم التسليم ({% else %}✓ Submitted ({% endif %}{{ assign.submission.score }}/100)
+                  {% if is_ar %}تم التسليم ({% else %}Submitted ({% endif %}{{ assign.submission.score }}/100)
                 </span>
               {% else %}
                 <span class="badge badge-pending">
-                  {% if is_ar %}⏳ بانتظار الحل{% else %}⏳ Pending Solve{% endif %}
+                  {% if is_ar %}بانتظار الحل{% else %}Pending Solve{% endif %}
                 </span>
               {% endif %}
             </div>
@@ -82,11 +82,11 @@
           <div class="action-ctas">
             {% if assign.submission %}
               <button class="btn btn-ghost btn-sm" onclick="showSubmissionCode('{{ assign.id }}')">
-                👁️ {% if is_ar %}عرض الكود المقدم{% else %}View Submitted Code{% endif %}
+                {% if is_ar %}عرض الكود المقدم{% else %}View Submitted Code{% endif %}
               </button>
             {% else %}
               <a href="{% url 'courses:playground' %}" class="btn btn-accent btn-sm">
-                ⚡ {% if is_ar %}حل في بيئة العمل{% else %}Solve in Editor{% endif %}
+                {% if is_ar %}حل في بيئة العمل{% else %}Solve in Editor{% endif %}
               </a>
             {% endif %}
           </div>
@@ -97,13 +97,13 @@
         {% if assign.submission %}
           <div id="code-drawer-{{ assign.id }}" class="code-drawer-pane" style="display: none;">
             <div class="pane-header mt-3">
-              <span>💻 {% if is_ar %}الحل البرمجي المقدم ({% else %}Submitted Solution ({% endif %}{{ assign.submission.language|upper }}):</span>
+              <span>{% if is_ar %}الحل البرمجي المقدم ({% else %}Submitted Solution ({% endif %}{{ assign.submission.language|upper }}):</span>
               <button class="btn btn-ghost btn-xs" onclick="hideSubmissionCode('{{ assign.id }}')">✕</button>
             </div>
             <pre class="submitted-code-pre"><code>{{ assign.submission.code_submitted }}</code></pre>
             {% if assign.submission.feedback %}
               <div class="ai-feedback-box mt-2">
-                <strong>🤖 {% if is_ar %}ملاحظات التقييم الذكي:{% else %}Mock AI Feedback:{% endif %}</strong>
+                <strong>{% if is_ar %}ملاحظات التقييم الذكي:{% else %}Mock AI Feedback:{% endif %}</strong>
                 <p class="mt-1">{{ assign.submission.feedback|linebreaksbr }}</p>
               </div>
             {% endif %}
@@ -113,7 +113,7 @@
       </div>
     {% empty %}
       <div class="glass-card empty-state text-center p-5">
-        <span class="empty-icon">📝</span>
+        <span class="empty-icon"></span>
         <h3 class="mt-3">
           {% if is_ar %}لا توجد واجبات نشطة{% else %}No active assignments{% endif %}
         </h3>
