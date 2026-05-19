@@ -22,6 +22,18 @@ class RegisterForm(UserCreationForm):
             'autocomplete': 'username',
         })
     )
+    role = forms.ChoiceField(
+        choices=[
+            ('student', 'Student / طالب العلم'),
+            ('instructor', 'Instructor / معلم المساق'),
+        ],
+        widget=forms.Select(attrs={
+            'class': 'glass-input',
+            'style': 'background: #1c1b1c; color: #fff; border: none; border-bottom: 2px solid var(--outline-variant); padding: 0.75rem 1rem; width: 100%; font-family: inherit; font-size: 0.95rem;'
+        }),
+        initial='student',
+        label="Register as / التسجيل كـ"
+    )
     password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'glass-input',
@@ -39,13 +51,17 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password1', 'password2')
+        fields = ('email', 'username', 'role', 'password1', 'password2')
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         if commit:
             user.save()
+            # Save role to user profile
+            profile = user.profile
+            profile.role = self.cleaned_data['role']
+            profile.save()
         return user
 
 

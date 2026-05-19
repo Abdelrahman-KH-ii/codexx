@@ -27,7 +27,8 @@
     </div>
   </div>
 
-  <div class="roles-grid">
+  <div class="roles-grid" {% if is_instructor_only %}style="grid-template-columns: 1fr; max-width: 550px; margin: 1.5rem auto 0 auto;"{% endif %}>
+    {% if not is_instructor_only %}
     <!-- Student Role Card -->
     <div class="glass-card role-card {% if current_role == 'student' %}active-role{% endif %}" onclick="selectRole('student')">
       <div class="role-icon-wrap bg-student">
@@ -69,6 +70,7 @@
         <span class="text-en">Activate Student Interface</span>
       </button>
     </div>
+    {% endif %}
 
     <!-- Instructor Role Card -->
     <div class="glass-card role-card {% if current_role == 'instructor' %}active-role-instructor{% endif %}" onclick="selectRole('instructor')">

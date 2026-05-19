@@ -26,12 +26,14 @@
     {% endif %}
   </div>
   <nav class="sidebar-nav">
-    <!-- Role Switch Button always available at top of nav for logged-in users -->
+    <!-- Role Switch Button only available for Instructors to choose which course to manage -->
+    {% if user_profile.role == 'instructor' %}
     <a href="{% url 'dashboard:switch_role' %}" class="nav-item {% if request.resolver_match.url_name == 'switch_role' %}active{% endif %}" style="background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.15); margin-bottom: 0.75rem;">
       <span class="material-symbols-outlined nav-icon" style="color: #c084fc;">swap_horiz</span>
-      <span class="text-ar" style="color: #c084fc; font-weight: 700;">تبديل دور المستخدم</span>
-      <span class="text-en" style="color: #c084fc; font-weight: 700;">Switch User Role</span>
+      <span class="text-ar" style="color: #c084fc; font-weight: 700;">إدارة كورس آخر</span>
+      <span class="text-en" style="color: #c084fc; font-weight: 700;">Manage Another Course</span>
     </a>
+    {% endif %}
 
     {% if request.session.role == 'instructor' %}
       <!-- Instructor Mode Navigation Layout -->
