@@ -12,17 +12,24 @@ from .forms import LoginForm, ProfileForm, RegisterForm
 class RegisterView(CreateView):
     form_class = RegisterForm
     template_name = 'accounts/register.html'
-    success_url = reverse_lazy('dashboard:index')
+    success_url = reverse_lazy('dashboard:switch_role')
 
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)
+        
+        # Auto-enroll new user in all published courses
+        from courses.models import Course, Enrollment
+        published_courses = Course.objects.filter(is_published=True)
+        for c in published_courses:
+            Enrollment.objects.get_or_create(user=self.object, course=c)
+            
         messages.success(self.request, 'Welcome to Nexus AI. Your journey begins now.')
         return response
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            return redirect('dashboard:index')
+            return redirect('dashboard:switch_role')
         return super().dispatch(request, *args, **kwargs)
 
 

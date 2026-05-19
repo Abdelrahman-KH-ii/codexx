@@ -1,5 +1,16 @@
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+from functools import wraps
+
+def instructor_required(view_func):
+    @login_required
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_staff or request.session.get('role') == 'instructor':
+            return view_func(request, *args, **kwargs)
+        messages.error(request, "Access restricted to instructors.")
+        return redirect('dashboard:switch_role')
+    return _wrapped_view
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
@@ -10,7 +21,7 @@ from .models import Course, Lesson, Module, Enrollment, Assignment, Attendance
 User = get_user_model()
 
 
-@staff_member_required
+@instructor_required
 def admin_dashboard(request):
     courses = Course.objects.all().order_by('category', 'order')
     
@@ -80,7 +91,7 @@ def admin_dashboard(request):
     })
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_enroll_student(request):
     user_id = request.POST.get('user_id')
@@ -102,7 +113,7 @@ def admin_enroll_student(request):
     return redirect('courses:admin_dashboard')
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_unenroll_student(request, enrollment_id):
     enrollment = get_object_or_404(Enrollment, pk=enrollment_id)
@@ -113,7 +124,7 @@ def admin_unenroll_student(request, enrollment_id):
     return redirect('courses:admin_dashboard')
 
 
-@staff_member_required
+@instructor_required
 def admin_course_create(request):
     if request.method == 'POST':
         form = CourseForm(request.POST, request.FILES)
@@ -130,7 +141,7 @@ def admin_course_create(request):
     })
 
 
-@staff_member_required
+@instructor_required
 def admin_course_edit(request, slug):
     course = get_object_or_404(Course, slug=slug)
     if request.method == 'POST':
@@ -148,7 +159,7 @@ def admin_course_edit(request, slug):
     })
 
 
-@staff_member_required
+@instructor_required
 def admin_course_manage(request, slug):
     course = get_object_or_404(
         Course.objects.prefetch_related('modules__lessons'),
@@ -163,7 +174,7 @@ def admin_course_manage(request, slug):
     })
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_module_add(request, slug):
     course = get_object_or_404(Course, slug=slug)
@@ -178,7 +189,7 @@ def admin_module_add(request, slug):
     return redirect('courses:admin_manage', slug=slug)
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_lesson_add(request, slug, module_id):
     course = get_object_or_404(Course, slug=slug)
@@ -197,7 +208,7 @@ def admin_lesson_add(request, slug, module_id):
     return redirect('courses:admin_manage', slug=slug)
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_course_delete(request, slug):
     course = get_object_or_404(Course, slug=slug)
@@ -207,7 +218,7 @@ def admin_course_delete(request, slug):
     return redirect('courses:admin_dashboard')
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_course_toggle_publish(request, slug):
     course = get_object_or_404(Course, slug=slug)
@@ -218,7 +229,7 @@ def admin_course_toggle_publish(request, slug):
     return redirect('courses:admin_dashboard')
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_attendance_save(request):
     course_id = request.POST.get('course_id')
@@ -244,7 +255,7 @@ def admin_attendance_save(request):
     return redirect(f'/courses/manage/?active_tab_state=attendance&course_id={course_id}')
 
 
-@staff_member_required
+@instructor_required
 @require_POST
 def admin_assignment_add(request):
     course_id = request.POST.get('course_id')
